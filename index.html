@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tenis igrišče Ponikva (3232) - Rezervacijski sistem</title>
+    <title>Tenis igrišče Ponikva - Rezervacijski sistem</title>
 
     <!-- Ikona za zavihek / zaznamke v brskalniku (teniška žogica) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CclipPath id='c'%3E%3Ccircle cx='32' cy='32' r='22'/%3E%3C/clipPath%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%230f291e'/%3E%3Ccircle cx='32' cy='32' r='22' fill='%23d4e83a'/%3E%3Cg clip-path='url(%23c)' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M12 10Q40 32 12 54'/%3E%3Cpath d='M52 10Q24 32 52 54'/%3E%3C/g%3E%3C/svg%3E">
@@ -196,9 +196,7 @@
                         <div>
                             <div class="font-display font-bold text-lg sm:text-xl tracking-tight leading-none text-white flex items-center gap-2">
                                 Tenis Ponikva
-                                <span class="bg-clay-600/90 text-white text-[10px] uppercase font-bold px-1.5 py-0.5 rounded tracking-wider">3232</span>
                             </div>
-                            <p class="text-xs text-court-lime/80 font-medium hidden sm:block mt-0.5">Rezervacijski sistem ŠD Ponikva</p>
                         </div>
                     </div>
 
@@ -235,7 +233,7 @@
                                 <span class="hidden sm:inline">Google prijava</span>
                                 <span class="sm:hidden">Google</span>
                             </button>
-                            <button @click="loginAnonymously" class="px-3 py-2 rounded-lg bg-court-accent hover:bg-court-light text-white font-semibold text-xs sm:text-sm shadow transition flex items-center gap-1.5 border border-court-light/40">
+                            <button @click="openGuestModal" class="px-3 py-2 rounded-lg bg-court-accent hover:bg-court-light text-white font-semibold text-xs sm:text-sm shadow transition flex items-center gap-1.5 border border-court-light/40">
                                 <i class="fa-solid fa-user-secret"></i>
                                 <span>Gost</span>
                             </button>
@@ -252,7 +250,7 @@
                     
                     <div>
                         <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-2">
-                            <i class="fa-solid fa-location-dot text-clay-500"></i> Ponikva (3232)
+                            <i class="fa-solid fa-location-dot text-clay-500"></i> Ponikva
                         </div>
                         <h1 class="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
                             Spletna rezervacija igrišč
@@ -413,7 +411,7 @@
                         <button @click="loginWithGoogle" class="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-300 shadow-sm transition inline-flex items-center gap-2">
                             <i class="fa-brands fa-google text-clay-600"></i> Prijava z Google
                         </button>
-                        <button @click="loginAnonymously" class="px-5 py-2.5 rounded-xl bg-court-green hover:bg-court-dark text-white font-semibold text-sm shadow-sm transition inline-flex items-center gap-2">
+                        <button @click="openGuestModal" class="px-5 py-2.5 rounded-xl bg-court-green hover:bg-court-dark text-white font-semibold text-sm shadow-sm transition inline-flex items-center gap-2">
                             <i class="fa-solid fa-user-secret"></i> Prijava kot gost
                         </button>
                     </div>
@@ -683,17 +681,17 @@
                         </div>
                         
                         <div class="space-y-3 text-xs sm:text-sm text-slate-600">
-                            <p class="flex items-center gap-2">
-                                <i class="fa-solid fa-building text-slate-400 w-5"></i>
-                                <span><strong>Športno društvo Ponikva</strong></span>
-                            </p>
-                            <p class="flex items-center gap-2">
-                                <i class="fa-solid fa-location-pin text-clay-600 w-5"></i>
-                                <span>Ponikva (pri šporni dvorani / igriščih), 3232 Ponikva</span>
+                            <p class="flex items-start gap-2">
+                                <i class="fa-solid fa-location-pin text-clay-600 w-5 mt-0.5"></i>
+                                <span>
+                                    <strong>Osnovna šola Blaža Kocena Ponikva</strong><br>
+                                    3232 Ponikva
+                                    <a href="https://www.google.com/maps/search/?api=1&query=Osnovna+%C5%A1ola+Bla%C5%BEa+Kocena+Ponikva+3232+Ponikva" target="_blank" rel="noopener" class="block mt-1 text-court-green hover:text-court-dark font-semibold underline underline-offset-2">Odpri v Google Zemljevidih</a>
+                                </span>
                             </p>
                             <p class="flex items-center gap-2">
                                 <i class="fa-solid fa-envelope text-slate-400 w-5"></i>
-                                <span>info@tenis-ponikva.si</span>
+                                <a href="#" @click.prevent="sendContactMail" class="text-court-green hover:text-court-dark font-semibold underline underline-offset-2">Pošlji sporočilo</a>
                             </p>
                         </div>
 
@@ -714,7 +712,7 @@
         <!-- FOOTER -->
         <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 py-6 text-center text-xs mt-12">
             <div class="max-w-7xl mx-auto px-4">
-                <p>© 2026 Teniško igrišče Ponikva (3232) • Vse pravice pridržane</p>
+                <p>© 2026 Teniško igrišče Ponikva • Vse pravice pridržane</p>
                 <p class="mt-1 text-slate-500">Sodobna spletna aplikacija za enostavno rezervacijo športnih terminov</p>
             </div>
         </footer>
@@ -761,6 +759,40 @@
                     </button>
                     <button @click="confirmBooking" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow transition flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-check"></i> Potrdi rezervacijo
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MODAL: GUEST NAME -->
+        <div v-if="showGuestModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
+
+                <button @click="showGuestModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div class="text-center mb-5">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <h3 class="font-display font-bold text-xl text-slate-900">Prijava kot gost</h3>
+                    <p class="text-xs text-slate-500 mt-1">Za nadaljevanje vpišite ime igralca oziroma nosilca rezervacije.</p>
+                </div>
+
+                <div class="mb-2">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Ime igralca / nosilca rezervacije</label>
+                    <input id="guestNameInput" type="text" v-model="guestName" @keyup.enter="confirmGuest" maxlength="40" placeholder="Vnesite vaše ime in priimek" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-court-accent focus:outline-none">
+                    <p v-if="guestError" class="text-[11px] text-red-600 mt-1">{{ guestError }}</p>
+                </div>
+
+                <div class="flex items-center gap-3 mt-6">
+                    <button @click="showGuestModal = false" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-300 transition">
+                        Prekliči
+                    </button>
+                    <button @click="confirmGuest" :disabled="guestBusy" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold text-xs shadow transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Nadaljuj
                     </button>
                 </div>
 
@@ -867,7 +899,7 @@
 
     <!-- APPLICATION SCRIPTS (Vue 3 ESM + Firebase 11.6.1) -->
     <script type="module">
-        import { createApp, ref, computed, onMounted, watch } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+        import { createApp, ref, computed, onMounted, watch, nextTick } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import {
             getAuth,
@@ -885,7 +917,8 @@
             collection,
             onSnapshot,
             setDoc,
-            deleteDoc
+            deleteDoc,
+            serverTimestamp
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ===== Omejitve =====
@@ -959,6 +992,12 @@
                 const targetBookingToCancel = ref(null);
 
                 const showProfileModal = ref(false);
+
+                // Gost - vpis imena
+                const showGuestModal = ref(false);
+                const guestName = ref('');
+                const guestError = ref('');
+                const guestBusy = ref(false);
 
                 // Toast Notification
                 const toast = ref({ show: false, title: '', message: '', type: 'success' });
@@ -1130,8 +1169,11 @@
                         currentUser.value = user;
                         authReady.value = true;
                         if (user) {
-                            if (!userName.value) {
-                                userName.value = user.displayName || (user.email ? user.email.split('@')[0] : 'Gost');
+                            if (!userName.value && !user.isAnonymous) {
+                                userName.value = user.displayName || (user.email ? user.email.split('@')[0] : 'Uporabnik');
+                            }
+                            if (user.isAnonymous && !userName.value) {
+                                openGuestModal();
                             }
                             startBookingsListener();
                         } else {
@@ -1244,15 +1286,61 @@
                     }
                 }
 
-                // Anonimna prijava (Gost)
-                async function loginAnonymously() {
+                // Gost: najprej okno z imenom, nato anonimna prijava
+                function openGuestModal() {
+                    guestName.value = userName.value && userName.value !== 'Gost' ? userName.value : '';
+                    guestError.value = '';
+                    showGuestModal.value = true;
+                    nextTick(() => {
+                        const el = document.getElementById('guestNameInput');
+                        if (el) el.focus();
+                    });
+                }
+
+                // Zapis gosta v Firestore (zbirka "guests"), da ga vidiš v Firebase konzoli
+                async function saveGuestRecord(user, name) {
                     try {
-                        await signInAnonymously(auth);
-                        triggerToast('Prijavljeni kot gost', 'Uspešno ste se prijavili brez računa.', 'success');
+                        await setDoc(doc(db, 'guests', user.uid), {
+                            name: name,
+                            uid: user.uid,
+                            lastLoginAt: serverTimestamp()
+                        }, { merge: true });
+                    } catch (e) {
+                        console.warn('Zapis gosta ni uspel (preverite Firestore pravila):', e);
+                    }
+                }
+
+                async function confirmGuest() {
+                    const name = (guestName.value || '').trim();
+                    if (name.length < 2) {
+                        guestError.value = 'Vpišite ime (vsaj 2 znaka).';
+                        return;
+                    }
+                    guestError.value = '';
+                    guestBusy.value = true;
+                    try {
+                        userName.value = name;
+                        localStorage.setItem('ponikva_user_name', name);
+                        let user = currentUser.value;
+                        if (!user) {
+                            const cred = await signInAnonymously(auth);
+                            user = cred.user;
+                        }
+                        await saveGuestRecord(user, name);
+                        showGuestModal.value = false;
+                        triggerToast('Prijavljeni kot gost', `Pozdravljeni, ${name}!`, 'success');
                     } catch (e) {
                         console.error(e);
                         triggerToast('Prijava ni uspela', 'Preverite, ali je v Firebase omogočen "Anonymous" ponudnik.', 'error');
+                    } finally {
+                        guestBusy.value = false;
                     }
+                }
+
+                // Kontakt: odpre e-poštni odjemalec, naslov ni viden na strani
+                function sendContactMail() {
+                    const addr = ['robi.filipsek', 'gmail.com'].join('@');
+                    window.location.href = 'mailto:' + addr + '?subject=' + encodeURIComponent('Tenis Ponikva - sporočilo');
                 }
 
                 async function logout() {
@@ -1267,6 +1355,9 @@
                 function saveProfile() {
                     if (userName.value) {
                         localStorage.setItem('ponikva_user_name', userName.value);
+                        if (currentUser.value && currentUser.value.isAnonymous) {
+                            saveGuestRecord(currentUser.value, userName.value.trim());
+                        }
                         triggerToast('Spremembe shranjene', 'Prikazano ime je posodobljeno.', 'success');
                     }
                     showProfileModal.value = false;
@@ -1306,7 +1397,13 @@
                     promptCancelBooking,
                     confirmCancelBooking,
                     loginWithGoogle,
-                    loginAnonymously,
+                    showGuestModal,
+                    guestName,
+                    guestError,
+                    guestBusy,
+                    openGuestModal,
+                    confirmGuest,
+                    sendContactMail,
                     logout,
                     openProfileModal,
                     saveProfile
