@@ -121,9 +121,9 @@
                         </template>
 
                         <template v-else>
-                            <button @click="openAuthModal('login')" class="px-3.5 py-2 rounded-lg bg-clay-600 hover:bg-clay-700 text-white font-medium text-xs sm:text-sm shadow transition flex items-center gap-2">
-                                <i class="fa-solid fa-right-to-bracket"></i>
-                                <span>Prijava / Registracija</span>
+                            <button @click="loginWithGoogle" class="px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs sm:text-sm shadow transition flex items-center gap-2">
+                                <i class="fa-brands fa-google text-clay-600"></i>
+                                <span>Prijava z Google</span>
                             </button>
                         </template>
                     </div>
@@ -144,7 +144,7 @@
                             Spletna rezervacija igrišč
                         </h1>
                         <p class="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-                            Izberite termin in igrišče ter uživajte v tenisu. Urnik obratovanja vsak dan od **06:00 do 22:00**.
+                            Izberite termin in igrišče ter uživajte v tenisu. Urnik obratovanja vsak dan od <strong>06:00 do 22:00</strong>.
                         </p>
                     </div>
 
@@ -158,14 +158,14 @@
                         </div>
                         <div class="bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
                             <span class="text-slate-400 font-medium">Dnevna kvota</span>
-                            <span class="text-sm font-bold text-emerald-300 mt-0.5" :class="{'text-amber-400': todayUsage >= 2}">
-                                {{ todayUsage }} / 2 uri
+                            <span class="text-sm font-bold mt-0.5" :class="todayUsage >= DAILY_LIMIT ? 'text-amber-400' : 'text-emerald-300'">
+                                {{ todayUsage }} / {{ DAILY_LIMIT }} uri
                             </span>
                         </div>
                         <div class="col-span-2 sm:col-span-1 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
                             <span class="text-slate-400 font-medium">Tedenska kvota</span>
-                            <span class="text-sm font-bold text-emerald-300 mt-0.5" :class="{'text-amber-400': weekUsage >= 10}">
-                                {{ weekUsage }} / 10 ur
+                            <span class="text-sm font-bold mt-0.5" :class="weekUsage >= WEEKLY_LIMIT ? 'text-amber-400' : 'text-emerald-300'">
+                                {{ weekUsage }} / {{ WEEKLY_LIMIT }} ure
                             </span>
                         </div>
                     </div>
@@ -280,16 +280,42 @@
 
                 </div>
 
-                <!-- QUOTA WARNING BANNER IF NEAR LIMIT -->
-                <div v-if="todayUsage >= 2" class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-center gap-3">
+                <!-- FIREBASE NOT CONFIGURED -->
+                <div v-if="configMissing" class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs sm:text-sm flex items-center gap-3">
+                    <i class="fa-solid fa-plug-circle-xmark text-red-600 text-lg flex-shrink-0"></i>
+                    <div>
+                        <strong>Firebase še ni nastavljen.</strong> V datoteki index.html zamenjajte vrednosti v <code>firebaseConfig</code> s podatki iz svojega Firebase projekta.
+                    </div>
+                </div>
+
+                <!-- LOGIN GATE -->
+                <div v-if="!currentUser" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-8 text-center">
+                    <div class="w-14 h-14 bg-clay-600 rounded-full text-white flex items-center justify-center mx-auto mb-3 text-2xl shadow">
+                        <i class="fa-solid fa-baseball"></i>
+                    </div>
+                    <h2 class="font-display font-bold text-xl text-slate-900">Prijavite se za rezervacijo</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1 mb-5">Za ogled zasedenosti in rezervacijo igrišča uporabite svoj Google račun.</p>
+                    <button @click="loginWithGoogle" class="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-300 shadow-sm transition inline-flex items-center gap-2">
+                        <i class="fa-brands fa-google text-clay-600"></i> Prijava z Google
+                    </button>
+                </div>
+
+                <!-- QUOTA WARNING BANNERS -->
+                <div v-if="currentUser && todayUsage >= DAILY_LIMIT" class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-center gap-3">
                     <i class="fa-solid fa-triangle-exclamation text-amber-600 text-lg flex-shrink-0"></i>
                     <div>
-                        <strong>Dnevna omejitev dosežena!</strong> Za izbrani dan ste že rezervirali {{ todayUsage }}/2 ur. Za več terminov izberite drug datum ali sprostite obstoječo rezervacijo.
+                        <strong>Dnevna omejitev dosežena!</strong> Za izbrani dan ste že rezervirali {{ todayUsage }}/{{ DAILY_LIMIT }} uri. Za več terminov izberite drug datum ali sprostite obstoječo rezervacijo.
+                    </div>
+                </div>
+                <div v-if="currentUser && weekUsage >= WEEKLY_LIMIT" class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-center gap-3">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-lg flex-shrink-0"></i>
+                    <div>
+                        <strong>Tedenska omejitev dosežena!</strong> V tem tednu ste že rezervirali {{ weekUsage }}/{{ WEEKLY_LIMIT }} ure.
                     </div>
                 </div>
 
                 <!-- COURTS SCHEDULE GRID -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div v-if="currentUser" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     
                     <!-- COURT 1 -->
                     <div v-if="courtFilter === 'all' || courtFilter === 'court1'" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
@@ -513,7 +539,7 @@
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i>
-                                <span><strong>Tedenska kvota:</strong> Posamezen uporabnik lahko rezervira največ <strong>10 ur v tekočem tednu</strong>.</span>
+                                <span><strong>Tedenska kvota:</strong> Posamezen uporabnik lahko rezervira največ <strong>4 ure v tekočem tednu</strong>.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i>
@@ -573,78 +599,6 @@
                 <p class="mt-1 text-slate-500">Sodobna spletna aplikacija za enostavno rezervacijo športnih terminov</p>
             </div>
         </footer>
-
-        <!-- MODAL 1: AUTHENTICATION (LOGIN / REGISTER) -->
-        <div v-if="showAuthModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
-                
-                <button @click="showAuthModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-
-                <div class="text-center mb-6">
-                    <div class="w-12 h-12 bg-clay-600 rounded-full text-white flex items-center justify-center mx-auto mb-2 text-xl shadow">
-                        <i class="fa-solid fa-baseball"></i>
-                    </div>
-                    <h3 class="font-display font-bold text-xl text-slate-900">Prijava v sistem</h3>
-                    <p class="text-xs text-slate-500 mt-1">Za rezervacijo igrišča se vpišite ali nadaljujte kot gost</p>
-                </div>
-
-                <!-- Auth Error Alert -->
-                <div v-if="authError" class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
-                    {{ authError }}
-                </div>
-
-                <!-- Auth Tabs -->
-                <div class="flex border-b border-slate-200 mb-4">
-                    <button 
-                        @click="authMode = 'login'; authError = ''" 
-                        :class="authMode === 'login' ? 'border-b-2 border-clay-600 font-bold text-clay-600' : 'text-slate-500'"
-                        class="flex-1 py-2 text-center text-xs transition">
-                        Prijava
-                    </button>
-                    <button 
-                        @click="authMode = 'register'; authError = ''" 
-                        :class="authMode === 'register' ? 'border-b-2 border-clay-600 font-bold text-clay-600' : 'text-slate-500'"
-                        class="flex-1 py-2 text-center text-xs transition">
-                        Registracija
-                    </button>
-                </div>
-
-                <!-- Form -->
-                <form @submit.prevent="handleAuthSubmit" class="space-y-3">
-                    <div v-if="authMode === 'register'">
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ime in Priimek</label>
-                        <input type="text" v-model="authForm.name" required placeholder="npr. Marko Kovač" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-clay-500 focus:outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">E-poštni naslov</label>
-                        <input type="email" v-model="authForm.email" required placeholder="vas@email.si" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-clay-500 focus:outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Geslo</label>
-                        <input type="password" v-model="authForm.password" required placeholder="••••••••" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-clay-500 focus:outline-none">
-                    </div>
-
-                    <button type="submit" class="w-full py-2.5 rounded-xl bg-clay-600 hover:bg-clay-700 text-white font-bold text-xs shadow transition mt-2">
-                        {{ authMode === 'login' ? 'Prijavi se' : 'Ustvari račun' }}
-                    </button>
-                </form>
-
-                <div class="relative my-4">
-                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
-                    <div class="relative flex justify-center text-[10px] uppercase"><span class="bg-white px-2 text-slate-400 font-semibold">ali</span></div>
-                </div>
-
-                <!-- Guest Login Button -->
-                <button @click="loginAsGuest" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-300 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-user-ninja text-slate-500"></i> Hitra gostujoča prijava
-                </button>
-
-            </div>
-        </div>
 
         <!-- MODAL 2: BOOKING CONFIRMATION -->
         <div v-if="showBookingModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
@@ -738,7 +692,7 @@
                     </div>
 
                     <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
-                        <div class="text-slate-500">E-pošta ali ID:</div>
+                        <div class="text-slate-500">Google račun:</div>
                         <div class="font-mono text-slate-800 font-semibold break-all">{{ currentUser?.email || currentUser?.uid }}</div>
                     </div>
 
@@ -746,11 +700,11 @@
                         <div class="font-bold text-slate-800">Statistika kvot:</div>
                         <div class="flex justify-between">
                             <span class="text-slate-500">Danes ({{ selectedDate }}):</span>
-                            <span class="font-bold text-court-green">{{ todayUsage }} / 2 uri</span>
+                            <span class="font-bold text-court-green">{{ todayUsage }} / {{ DAILY_LIMIT }} uri</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-slate-500">Ta teden:</span>
-                            <span class="font-bold text-court-green">{{ weekUsage }} / 10 ur</span>
+                            <span class="font-bold text-court-green">{{ weekUsage }} / {{ WEEKLY_LIMIT }} ure</span>
                         </div>
                     </div>
                 </div>
@@ -794,36 +748,40 @@
     <script type="module">
         import { createApp, ref, computed, onMounted, watch } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInAnonymously, 
-            signInWithCustomToken, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged 
+        import {
+            getAuth,
+            GoogleAuthProvider,
+            signInWithPopup,
+            signInWithRedirect,
+            getRedirectResult,
+            signOut,
+            onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            collection, 
-            onSnapshot, 
-            setDoc, 
-            deleteDoc 
+        import {
+            getFirestore,
+            doc,
+            collection,
+            onSnapshot,
+            setDoc,
+            deleteDoc
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'tenis-ponikva-3232';
-        
-        const firebaseConfig = typeof __firebase_config !== 'undefined'
-            ? JSON.parse(__firebase_config)
-            : {
-                apiKey: "AIzaSyDemoFallbackKeyOnly123456789",
-                authDomain: "tenis-ponikva.firebaseapp.com",
-                projectId: "tenis-ponikva",
-                storageBucket: "tenis-ponikva.appspot.com",
-                messagingSenderId: "1234567890",
-                appId: "1:1234567890:web:abc123def456"
-            };
+        // ===== Omejitve =====
+        const DAILY_LIMIT = 2;   // ur na dan
+        const WEEKLY_LIMIT = 4;  // ur na teden
+
+        // ===== FIREBASE NASTAVITVE =====
+        // Vrednosti vzemite v Firebase konzoli:
+        // Project settings > General > Your apps > Web app > SDK setup and configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEXGenSyOuZdKYaR5TFTKH16qIpheGOG4",
+            authDomain: "tenis-ponikva.firebaseapp.com",
+            projectId: "tenis-ponikva",
+            storageBucket: "tenis-ponikva.firebasestorage.app",
+            messagingSenderId: "58911633006",
+            appId: "1:58911633006:web:f1d5f1c2fc1ea96f72007f"
+        };
+        const configMissing = firebaseConfig.apiKey.startsWith('VSTAVI');
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -872,11 +830,6 @@
                 const bookings = ref([]);
 
                 // Modals
-                const showAuthModal = ref(false);
-                const authMode = ref('login');
-                const authForm = ref({ email: '', password: '', name: '' });
-                const authError = ref('');
-
                 const showBookingModal = ref(false);
                 const targetCourt = ref(null);
                 const targetSlot = ref(null);
@@ -993,57 +946,62 @@
                     selectedDate.value = getTodayString();
                 }
 
-                onMounted(() => {
-                    // Auth state observer
-                    onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            currentUser.value = user;
-                            if (!userName.value) {
-                                userName.value = user.email ? user.email.split('@')[0] : 'Igralec Ponikva';
-                            }
-                        } else {
-                            currentUser.value = null;
-                            // Attempt custom token if present, otherwise auto sign in anonymously
-                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                try {
-                                    await signInWithCustomToken(auth, __initial_auth_token);
-                                } catch (e) {
-                                    await signInAnonymously(auth);
-                                }
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        }
-                    });
+                const authReady = ref(false);
+                const bookingsLoaded = ref(false);
+                let unsubBookings = null;
 
-                    // Realtime Firestore Listener on public bookings collection
-                    // Path: /artifacts/{appId}/public/data/bookings
-                    const bookingsRef = collection(db, 'artifacts', appId, 'public', 'data', 'bookings');
-                    onSnapshot(bookingsRef, (snapshot) => {
+                function stopBookingsListener() {
+                    if (unsubBookings) unsubBookings();
+                    unsubBookings = null;
+                    bookings.value = [];
+                    bookingsLoaded.value = false;
+                }
+
+                // Sinhronizacija v realnem času: vsak brskalnik dobi spremembe takoj
+                function startBookingsListener() {
+                    stopBookingsListener();
+                    unsubBookings = onSnapshot(collection(db, 'bookings'), (snapshot) => {
                         const loaded = [];
-                        snapshot.forEach((docSnap) => {
-                            loaded.push({ id: docSnap.id, ...docSnap.data() });
-                        });
+                        snapshot.forEach((d) => loaded.push({ id: d.id, ...d.data() }));
                         bookings.value = loaded;
+                        bookingsLoaded.value = true;
                     }, (err) => {
-                        console.error("Firestore snapshot napaka:", err);
+                        console.error("Firestore napaka:", err);
+                        triggerToast('Napaka pri branju', 'Rezervacij ni mogoče naložiti. Preverite Firestore pravila.', 'error');
+                    });
+                }
+
+                onMounted(() => {
+                    getRedirectResult(auth).catch((e) => console.error(e));
+
+                    onAuthStateChanged(auth, (user) => {
+                        currentUser.value = user;
+                        authReady.value = true;
+                        if (user) {
+                            if (!userName.value) {
+                                userName.value = user.displayName || (user.email ? user.email.split('@')[0] : 'Igralec');
+                            }
+                            startBookingsListener();
+                        } else {
+                            stopBookingsListener();
+                        }
                     });
                 });
 
                 function promptBookSlot(courtId, slot) {
                     if (!currentUser.value) {
-                        showAuthModal.value = true;
+                        loginWithGoogle();
                         return;
                     }
 
                     // Check limits before opening modal
-                    if (todayUsage.value >= 2) {
-                        triggerToast('Dnevna kvota presežena', 'Dosegli ste dnevno omejitev 2 ur za ta dan!', 'error');
+                    if (todayUsage.value >= DAILY_LIMIT) {
+                        triggerToast('Dnevna kvota presežena', `Dosegli ste dnevno omejitev ${DAILY_LIMIT} ur za ta dan!`, 'error');
                         return;
                     }
 
-                    if (weekUsage.value >= 10) {
-                        triggerToast('Tedenska kvota presežena', 'Dosegli ste tedensko omejitev 10 ur v tekočem tednu!', 'error');
+                    if (weekUsage.value >= WEEKLY_LIMIT) {
+                        triggerToast('Tedenska kvota presežena', `Dosegli ste tedensko omejitev ${WEEKLY_LIMIT} ur v tekočem tednu!`, 'error');
                         return;
                     }
 
@@ -1057,6 +1015,19 @@
                     if (!currentUser.value || !targetSlot.value) return;
 
                     const docId = `${targetCourt.value}_${selectedDate.value}_${targetSlot.value.startHour}`;
+
+                    // Ponovni preizkus (podatki so se lahko medtem spremenili)
+                    if (bookings.value.some(b => b.id === docId)) {
+                        triggerToast('Termin je zaseden', 'Nekdo je termin rezerviral pred vami.', 'error');
+                        showBookingModal.value = false;
+                        return;
+                    }
+                    if (todayUsage.value >= DAILY_LIMIT || weekUsage.value >= WEEKLY_LIMIT) {
+                        triggerToast('Kvota presežena', 'Za ta termin nimate več proste kvote.', 'error');
+                        showBookingModal.value = false;
+                        return;
+                    }
+
                     const bookingData = {
                         courtId: targetCourt.value,
                         date: selectedDate.value,
@@ -1068,14 +1039,19 @@
                     };
 
                     try {
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'bookings', docId);
+                        const docRef = doc(db, 'bookings', docId);
                         await setDoc(docRef, bookingData);
                         
                         triggerToast('Uspešna rezervacija!', `Rezervirali ste ${targetCourt.value === 'court1' ? 'Igrišče 1' : 'Igrišče 2'} ob ${targetSlot.value.label}`, 'success');
                         showBookingModal.value = false;
                     } catch (e) {
                         console.error("Napaka pri rezervaciji:", e);
-                        triggerToast('Napaka', 'Rezervacija ni uspela. Poskusite ponovno.', 'error');
+                        if (e.code === 'permission-denied') {
+                            triggerToast('Rezervacija ni uspela', 'Termin je medtem že zaseden ali nimate dovoljenja.', 'error');
+                        } else {
+                            triggerToast('Napaka', 'Rezervacija ni uspela. Poskusite ponovno.', 'error');
+                        }
+                        showBookingModal.value = false;
                     }
                 }
 
@@ -1088,7 +1064,7 @@
                     if (!targetBookingToCancel.value) return;
 
                     try {
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'bookings', targetBookingToCancel.value.id);
+                        const docRef = doc(db, 'bookings', targetBookingToCancel.value.id);
                         await deleteDoc(docRef);
 
                         triggerToast('Rezervacija preklicana', 'Termin je sedaj sproščen za ostale igralce.', 'info');
@@ -1100,42 +1076,21 @@
                     }
                 }
 
-                // Auth Actions
-                function openAuthModal(mode = 'login') {
-                    authMode.value = mode;
-                    authError.value = '';
-                    showAuthModal.value = true;
-                }
-
-                async function handleAuthSubmit() {
-                    authError.value = '';
+                // Prijava z Google računom
+                async function loginWithGoogle() {
+                    const provider = new GoogleAuthProvider();
+                    provider.setCustomParameters({ prompt: 'select_account' });
                     try {
-                        if (authMode.value === 'register') {
-                            const res = await createUserWithEmailAndPassword(auth, authForm.value.email, authForm.value.password);
-                            if (authForm.value.name) {
-                                userName.value = authForm.value.name;
-                                localStorage.setItem('ponikva_user_name', authForm.value.name);
-                            }
-                            triggerToast('Dobrodošli!', 'Registracija uspešna.', 'success');
-                        } else {
-                            await signInWithEmailAndPassword(auth, authForm.value.email, authForm.value.password);
-                            triggerToast('Prijavljeni', 'Uspešna prijava v sistem.', 'success');
+                        await signInWithPopup(auth, provider);
+                        triggerToast('Prijavljeni', 'Uspešna prijava z Google računom.', 'success');
+                    } catch (e) {
+                        if (e.code === 'auth/popup-blocked') {
+                            await signInWithRedirect(auth, provider);
+                            return;
                         }
-                        showAuthModal.value = false;
-                    } catch (e) {
-                        authError.value = 'Prijava/Registracija ni uspela: ' + (e.message || 'Napačni podatki');
-                    }
-                }
-
-                async function loginAsGuest() {
-                    try {
-                        await signInAnonymously(auth);
-                        userName.value = 'Gost ' + Math.floor(1000 + Math.random() * 9000);
-                        localStorage.setItem('ponikva_user_name', userName.value);
-                        triggerToast('Gostujoča prijava', 'Prijavljeni ste kot gost.', 'info');
-                        showAuthModal.value = false;
-                    } catch (e) {
-                        authError.value = 'Gostujoča prijava ni uspela.';
+                        if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+                        console.error(e);
+                        triggerToast('Prijava ni uspela', 'Poskusite znova. (' + (e.code || 'napaka') + ')', 'error');
                     }
                 }
 
@@ -1162,10 +1117,11 @@
                     courtFilter,
                     currentUser,
                     userName,
-                    showAuthModal,
-                    authMode,
-                    authForm,
-                    authError,
+                    authReady,
+                    bookingsLoaded,
+                    configMissing,
+                    DAILY_LIMIT,
+                    WEEKLY_LIMIT,
                     showBookingModal,
                     targetCourt,
                     targetSlot,
@@ -1186,9 +1142,7 @@
                     confirmBooking,
                     promptCancelBooking,
                     confirmCancelBooking,
-                    openAuthModal,
-                    handleAuthSubmit,
-                    loginAsGuest,
+                    loginWithGoogle,
                     logout,
                     openProfileModal,
                     saveProfile
