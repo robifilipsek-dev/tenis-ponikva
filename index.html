@@ -291,41 +291,26 @@
             
             <!-- NAVIGATION TABS -->
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-slate-200 pb-3">
-                <nav class="flex space-x-2 sm:space-x-4">
-                    <button 
-                        @click="activeTab = 'schedule'" 
-                        :class="activeTab === 'schedule' ? 'bg-court-green text-white shadow-sm' : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50'"
-                        class="px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition flex items-center gap-2 border border-slate-200/80">
-                        <i class="fa-solid fa-calendar-days"></i>
-                        <span>Urnik & Rezervacija</span>
-                    </button>
-
-                    <button 
-                        @click="activeTab = 'myBookings'" 
-                        :class="activeTab === 'myBookings' ? 'bg-court-green text-white shadow-sm' : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50'"
-                        class="px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition flex items-center gap-2 border border-slate-200/80 relative">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                        <span>Moje rezervacije</span>
-                        <span v-if="userFutureBookings.length > 0" class="ml-1 bg-clay-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <nav class="flex w-full lg:w-auto gap-1.5 sm:gap-3">
+                    <button
+                        v-for="tab in tabs" :key="tab.id"
+                        @click="activeTab = tab.id"
+                        :class="activeTab === tab.id ? 'bg-court-green text-white shadow-sm' : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50'"
+                        class="flex-1 lg:flex-none px-2 sm:px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition flex items-center justify-center gap-1.5 sm:gap-2 border border-slate-200/80 relative whitespace-nowrap">
+                        <i :class="tab.icon"></i>
+                        <span class="sm:hidden">{{ tab.short }}</span>
+                        <span class="hidden sm:inline">{{ tab.label }}</span>
+                        <span v-if="tab.id === 'myBookings' && userFutureBookings.length > 0" class="bg-clay-600 text-white text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
                             {{ userFutureBookings.length }}
                         </span>
                     </button>
-
-                    <button 
-                        @click="activeTab = 'info'" 
-                        :class="activeTab === 'info' ? 'bg-court-green text-white shadow-sm' : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50'"
-                        class="px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition flex items-center gap-2 border border-slate-200/80">
-                        <i class="fa-solid fa-circle-info"></i>
-                        <span>Pravila & Info</span>
-                    </button>
                 </nav>
 
-                <!-- Status Legend -->
+                <!-- Status Legend (desktop) -->
                 <div class="hidden lg:flex items-center space-x-4 text-xs font-medium text-slate-600 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-100 border border-emerald-400"></span> Prosto</span>
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500 border border-amber-600"></span> Moja rezervacija</span>
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-200 border border-slate-300"></span> Zasedeno</span>
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-100 border border-slate-200 text-slate-400"></span> Potekel</span>
+                    <span v-for="item in legendItems" :key="item.key" class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded border" :class="item.cls"></span> {{ item.label }}
+                    </span>
                 </div>
             </div>
 
@@ -392,6 +377,13 @@
 
                 </div>
 
+                <!-- STATUS LEGEND (mobile / tablet) – pod izbiro datuma, nad igrišči -->
+                <div v-if="currentUser" class="lg:hidden bg-white rounded-xl border border-slate-200 shadow-sm px-3 py-2.5 grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-2 text-[11px] sm:text-xs font-medium text-slate-600">
+                    <span v-for="item in legendItems" :key="item.key" class="flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded border flex-shrink-0" :class="item.cls"></span> {{ item.label }}
+                    </span>
+                </div>
+
                 <!-- FIREBASE NOT CONFIGURED -->
                 <div v-if="configMissing" class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs sm:text-sm flex items-center gap-3">
                     <i class="fa-solid fa-plug-circle-xmark text-red-600 text-lg flex-shrink-0"></i>
@@ -401,7 +393,7 @@
                 </div>
 
                 <!-- LOGIN GATE -->
-                <div v-if="!currentUser" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-8 text-center">
+                <div v-if="authReady && !currentUser" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-8 text-center">
                     <div class="w-14 h-14 bg-clay-600 rounded-full text-white flex items-center justify-center mx-auto mb-3 text-2xl shadow">
                         <i class="fa-solid fa-baseball"></i>
                     </div>
@@ -432,19 +424,18 @@
                 </div>
 
                 <!-- COURTS SCHEDULE GRID -->
-                <div v-if="currentUser" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    
-                    <!-- COURT 1 -->
-                    <div v-if="courtFilter === 'all' || courtFilter === 'court1'" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
-                        
+                <div v-if="currentUser && bookingsLoaded" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <div v-for="court in visibleCourts" :key="court.id" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
+
                         <!-- Court Header -->
                         <div class="bg-gradient-to-r from-court-dark to-court-green p-4 text-white flex items-center justify-between border-b border-court-accent/40">
                             <div class="flex items-center gap-3">
                                 <div class="w-9 h-9 rounded-xl bg-clay-600 flex items-center justify-center font-bold text-white shadow">
-                                    1
+                                    {{ court.n }}
                                 </div>
                                 <div>
-                                    <h2 class="font-display font-bold text-base sm:text-lg">Igrišče 1</h2>
+                                    <h2 class="font-display font-bold text-base sm:text-lg">{{ court.name }}</h2>
                                     <p class="text-xs text-court-lime/90 font-medium">Peščena podlaga (Rdeči pesek)</p>
                                 </div>
                             </div>
@@ -455,10 +446,10 @@
 
                         <!-- Slots List -->
                         <div class="divide-y divide-slate-100 p-2 sm:p-3">
-                            <div v-for="slot in getTimeSlots('court1')" :key="'c1_' + slot.startHour" 
+                            <div v-for="slot in getTimeSlots(court.id)" :key="court.id + '_' + slot.startHour"
                                  class="p-2.5 sm:p-3 rounded-xl transition flex items-center justify-between gap-3 my-1"
                                  :class="getSlotBgClass(slot)">
-                                
+
                                 <!-- Time & Status -->
                                 <div class="flex items-center space-x-3">
                                     <div class="w-20 sm:w-24 font-mono font-bold text-xs sm:text-sm text-slate-700 flex items-center gap-1.5">
@@ -484,90 +475,16 @@
 
                                 <!-- Action Buttons -->
                                 <div>
-                                    <button 
-                                        v-if="slot.isUserBooking" 
-                                        @click="promptCancelBooking(slot.booking)" 
+                                    <button
+                                        v-if="slot.isUserBooking && !slot.isPast"
+                                        @click="promptCancelBooking(slot.booking)"
                                         class="px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-xs font-semibold border border-red-300 transition flex items-center gap-1">
                                         <i class="fa-solid fa-xmark"></i> Prekliči
                                     </button>
 
-                                    <button 
-                                        v-else-if="!slot.isOccupied && !slot.isPast" 
-                                        @click="promptBookSlot('court1', slot)" 
-                                        class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition flex items-center gap-1">
-                                        <i class="fa-solid fa-plus"></i> Rezerviraj
-                                    </button>
-
-                                    <span v-else class="text-xs text-slate-400 font-medium px-2 py-1">
-                                        Ni na voljo
-                                    </span>
-                                </div>
-
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- COURT 2 -->
-                    <div v-if="courtFilter === 'all' || courtFilter === 'court2'" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
-                        
-                        <!-- Court Header -->
-                        <div class="bg-gradient-to-r from-court-dark to-court-green p-4 text-white flex items-center justify-between border-b border-court-accent/40">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-clay-600 flex items-center justify-center font-bold text-white shadow">
-                                    2
-                                </div>
-                                <div>
-                                    <h2 class="font-display font-bold text-base sm:text-lg">Igrišče 2</h2>
-                                    <p class="text-xs text-court-lime/90 font-medium">Peščena podlaga (Rdeči pesek)</p>
-                                </div>
-                            </div>
-                            <span class="text-xs bg-emerald-900/60 border border-emerald-400/30 text-emerald-300 font-semibold px-2.5 py-1 rounded-full">
-                                Aktivno
-                            </span>
-                        </div>
-
-                        <!-- Slots List -->
-                        <div class="divide-y divide-slate-100 p-2 sm:p-3">
-                            <div v-for="slot in getTimeSlots('court2')" :key="'c2_' + slot.startHour" 
-                                 class="p-2.5 sm:p-3 rounded-xl transition flex items-center justify-between gap-3 my-1"
-                                 :class="getSlotBgClass(slot)">
-                                
-                                <!-- Time & Status -->
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-20 sm:w-24 font-mono font-bold text-xs sm:text-sm text-slate-700 flex items-center gap-1.5">
-                                        <i class="fa-regular fa-clock text-slate-400"></i>
-                                        {{ slot.label }}
-                                    </div>
-
-                                    <div>
-                                        <span v-if="slot.isUserBooking" class="inline-flex items-center gap-1 text-xs font-bold text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-md border border-amber-300">
-                                            <i class="fa-solid fa-user-check"></i> Moja rezervacija
-                                        </span>
-                                        <span v-else-if="slot.isOccupied" class="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 bg-slate-200/80 px-2 py-0.5 rounded-md">
-                                            <i class="fa-solid fa-lock text-slate-500"></i> Zasedeno ({{ slot.booking.userName }})
-                                        </span>
-                                        <span v-else-if="slot.isPast" class="inline-flex items-center gap-1 text-xs font-medium text-slate-400 italic">
-                                            Potekel
-                                        </span>
-                                        <span v-else class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-200">
-                                            <i class="fa-solid fa-circle-check"></i> Prosto
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div>
-                                    <button 
-                                        v-if="slot.isUserBooking" 
-                                        @click="promptCancelBooking(slot.booking)" 
-                                        class="px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-xs font-semibold border border-red-300 transition flex items-center gap-1">
-                                        <i class="fa-solid fa-xmark"></i> Prekliči
-                                    </button>
-
-                                    <button 
-                                        v-else-if="!slot.isOccupied && !slot.isPast" 
-                                        @click="promptBookSlot('court2', slot)" 
+                                    <button
+                                        v-else-if="!slot.isOccupied && !slot.isPast"
+                                        @click="promptBookSlot(court.id, slot)"
                                         class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition flex items-center gap-1">
                                         <i class="fa-solid fa-plus"></i> Rezerviraj
                                     </button>
@@ -583,6 +500,106 @@
                     </div>
 
                 </div>
+
+                <!-- Nalaganje rezervacij -->
+                <div v-else-if="currentUser" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-10 text-center text-slate-500 text-sm">
+                    <i class="fa-solid fa-spinner fa-spin text-court-accent text-2xl mb-3 block"></i>
+                    Nalaganje rezervacij …
+                </div>
+
+            </div>
+
+            <!-- TAB: WEEKLY OVERVIEW -->
+            <div v-show="activeTab === 'week'" class="space-y-4">
+
+                <!-- Week controls -->
+                <div class="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-sm flex items-center justify-between gap-3">
+                    <button @click="changeWeek(-1)" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition" title="Prejšnji teden">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <div class="text-center">
+                        <div class="font-display font-bold text-base sm:text-lg text-slate-900">{{ weekRangeLabel }}</div>
+                        <div class="text-xs text-slate-500 font-medium">
+                            Tedenski pregled zasedenosti
+                            <button v-if="!isCurrentWeek" @click="goThisWeek" class="ml-1 text-court-green hover:text-court-dark font-semibold underline underline-offset-2">Ta teden</button>
+                        </div>
+                    </div>
+                    <button @click="changeWeek(1)" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition" title="Naslednji teden">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Legend (mobile / tablet) -->
+                <div v-if="currentUser" class="lg:hidden bg-white rounded-xl border border-slate-200 shadow-sm px-3 py-2.5 grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-2 text-[11px] sm:text-xs font-medium text-slate-600">
+                    <span v-for="item in legendItems" :key="item.key" class="flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded border flex-shrink-0" :class="item.cls"></span> {{ item.label }}
+                    </span>
+                </div>
+
+                <!-- Not logged in -->
+                <div v-if="authReady && !currentUser" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-8 text-center">
+                    <h2 class="font-display font-bold text-lg text-slate-900">Prijavite se za ogled zasedenosti</h2>
+                    <div class="flex flex-wrap items-center justify-center gap-3 mt-4">
+                        <button @click="loginWithGoogle" class="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-300 shadow-sm transition inline-flex items-center gap-2">
+                            <i class="fa-brands fa-google text-clay-600"></i> Prijava z Google
+                        </button>
+                        <button @click="openGuestModal" class="px-5 py-2.5 rounded-xl bg-court-green hover:bg-court-dark text-white font-semibold text-sm shadow-sm transition inline-flex items-center gap-2">
+                            <i class="fa-solid fa-user-secret"></i> Prijava kot gost
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div v-else-if="currentUser && !bookingsLoaded" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-10 text-center text-slate-500 text-sm">
+                    <i class="fa-solid fa-spinner fa-spin text-court-accent text-2xl mb-3 block"></i>
+                    Nalaganje rezervacij …
+                </div>
+
+                <!-- Days -->
+                <template v-else-if="currentUser">
+                    <p class="text-[11px] text-slate-500 px-1">
+                        Vsaka kocka = 1 ura (06:00–22:00). Številka desno = število prostih ur. Tapnite dan ali igrišče za odpiranje urnika.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                        <div v-for="day in weekDays" :key="day.date"
+                             class="bg-white rounded-2xl border shadow-sm p-3 sm:p-4"
+                             :class="day.isToday ? 'border-court-light ring-1 ring-court-light/40' : 'border-slate-200/80'">
+
+                            <button @click="openDay(day.date, 'all')" class="w-full flex items-center justify-between mb-2 text-left">
+                                <span class="flex items-center gap-2">
+                                    <span class="font-display font-bold text-slate-900">{{ day.dow }}</span>
+                                    <span class="text-xs text-slate-500 font-medium">{{ day.dayNum }}. {{ day.monthNum }}.</span>
+                                    <span v-if="day.isToday" class="text-[10px] font-bold bg-court-green text-white px-1.5 py-0.5 rounded-full">Danes</span>
+                                </span>
+                                <span class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                                    Prosto: <strong :class="day.totalFree === 0 ? 'text-slate-400' : 'text-emerald-700'">{{ day.totalFree }}</strong>
+                                    <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i>
+                                </span>
+                            </button>
+
+                            <!-- Hour ruler -->
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="w-5 flex-shrink-0"></span>
+                                <div class="relative flex-1 h-3 text-[9px] leading-3 text-slate-400 font-mono">
+                                    <span v-for="h in rulerHours" :key="h.hour" class="absolute top-0" :style="{ left: h.left, transform: h.shift }">{{ h.label }}</span>
+                                </div>
+                                <span class="w-6 flex-shrink-0"></span>
+                            </div>
+
+                            <!-- Court rows -->
+                            <button v-for="c in day.courts" :key="c.id" @click="openDay(day.date, c.id)"
+                                    class="w-full flex items-center gap-2 py-0.5 rounded-lg hover:bg-slate-50 transition" :title="c.name">
+                                <span class="w-5 h-5 rounded-md bg-clay-600 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">{{ c.n }}</span>
+                                <span class="flex-1 flex gap-px">
+                                    <span v-for="cell in c.cells" :key="cell.hour" :title="cell.title"
+                                          class="flex-1 h-6 rounded-[3px] border" :class="legendCls[cell.status]"></span>
+                                </span>
+                                <span class="w-6 flex-shrink-0 text-right text-[11px] font-bold" :class="c.free === 0 ? 'text-slate-400' : 'text-emerald-700'">{{ c.free }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </template>
 
             </div>
 
@@ -740,7 +757,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-slate-500">Datum:</span>
-                        <span class="font-bold text-slate-800">{{ selectedDate }}</span>
+                        <span class="font-bold text-slate-800">{{ formattedSelectedDate }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-slate-500">Ura / Termin:</span>
@@ -852,11 +869,11 @@
                     <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
                         <div class="font-bold text-slate-800">Statistika kvot:</div>
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Danes ({{ selectedDate }}):</span>
+                            <span class="text-slate-500">Izbrani dan:</span>
                             <span class="font-bold text-court-green">{{ todayUsage }} / {{ DAILY_LIMIT }} uri</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Ta teden:</span>
+                            <span class="text-slate-500">Izbrani teden:</span>
                             <span class="font-bold text-court-green">{{ weekUsage }} / {{ WEEKLY_LIMIT }} ure</span>
                         </div>
                     </div>
@@ -872,7 +889,7 @@
         </div>
 
         <!-- TOAST NOTIFICATIONS -->
-        <div v-if="toast.show" class="fixed bottom-5 right-5 z-50 max-w-sm w-full transition-all duration-300 transform">
+        <div v-if="toast.show" class="fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 z-50 sm:max-w-sm sm:w-full transition-all duration-300 transform">
             <div :class="{
                 'bg-emerald-800 border-emerald-600 text-white': toast.type === 'success',
                 'bg-red-800 border-red-600 text-white': toast.type === 'error',
@@ -969,6 +986,51 @@
             return { start: format(mon), end: format(sun) };
         }
 
+        function formatDate(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const da = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${da}`;
+        }
+
+        function addDaysStr(dateStr, n) {
+            const d = new Date(dateStr + 'T00:00:00');
+            d.setDate(d.getDate() + n);
+            return formatDate(d);
+        }
+
+        const pad2 = (n) => String(n).padStart(2, '0');
+
+        const COURTS = [
+            { id: 'court1', n: 1, name: 'Igrišče 1' },
+            { id: 'court2', n: 2, name: 'Igrišče 2' }
+        ];
+
+        // Legenda + barve (uporabljeno v legendi in v tedenskem pregledu)
+        const legendItems = [
+            { key: 'free', label: 'Prosto', cls: 'bg-emerald-200 border-emerald-400' },
+            { key: 'mine', label: 'Moja rezervacija', cls: 'bg-amber-500 border-amber-600' },
+            { key: 'busy', label: 'Zasedeno', cls: 'bg-slate-400 border-slate-500' },
+            { key: 'past', label: 'Potekel', cls: 'bg-slate-100 border-slate-300' }
+        ];
+        const legendCls = Object.fromEntries(legendItems.map(i => [i.key, i.cls]));
+
+        const tabs = [
+            { id: 'schedule', icon: 'fa-solid fa-calendar-days', short: 'Urnik', label: 'Urnik & Rezervacija' },
+            { id: 'week', icon: 'fa-solid fa-table-cells', short: 'Teden', label: 'Tedenski pregled' },
+            { id: 'myBookings', icon: 'fa-solid fa-clock-rotate-left', short: 'Moje', label: 'Moje rezervacije' },
+            { id: 'info', icon: 'fa-solid fa-circle-info', short: 'Info', label: 'Pravila & Info' }
+        ];
+
+        const rulerHours = [6, 10, 14, 18, 22].map(h => ({
+            hour: h,
+            label: pad2(h),
+            left: ((h - 6) / 16 * 100) + '%',
+            shift: h === 6 ? 'none' : (h === 22 ? 'translateX(-100%)' : 'translateX(-50%)')
+        }));
+
+        const MONTHS_GEN = ['januarja', 'februarja', 'marca', 'aprila', 'maja', 'junija', 'julija', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'];
+
         createApp({
             setup() {
                 const activeTab = ref('schedule');
@@ -1002,11 +1064,22 @@
                 // Toast Notification
                 const toast = ref({ show: false, title: '', message: '', type: 'success' });
 
+                let toastTimer = null;
                 function triggerToast(title, message, type = 'success') {
+                    clearTimeout(toastTimer);
                     toast.value = { show: true, title, message, type };
-                    setTimeout(() => {
+                    toastTimer = setTimeout(() => {
                         toast.value.show = false;
                     }, 4000);
+                }
+
+                // Trenutni čas (osvežuje se vsako minuto, da se termini sproti "iztečejo")
+                const nowTick = ref(Date.now());
+                setInterval(() => { nowTick.value = Date.now(); }, 60000);
+
+                function getNowInfo() {
+                    const now = new Date(nowTick.value);
+                    return { todayStr: formatDate(now), hour: now.getHours() };
                 }
 
                 // Namestitev spletne strani kot aplikacije (PWA)
@@ -1046,8 +1119,7 @@
                     if (!selectedDate.value) return '';
                     const d = new Date(selectedDate.value + 'T00:00:00');
                     const days = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
-                    const months = ['januar', 'februar', 'marec', 'april', 'maj', 'junij', 'julij', 'avgust', 'september', 'oktober', 'november', 'december'];
-                    return `${days[d.getDay()]}, ${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
+                    return `${days[d.getDay()]}, ${d.getDate()}. ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}`;
                 });
 
                 // Daily usage count for current user on selectedDate
@@ -1066,31 +1138,35 @@
                 // User's future bookings list
                 const userFutureBookings = computed(() => {
                     if (!currentUser.value) return [];
-                    const todayStr = getTodayString();
+                    const todayStr = getNowInfo().todayStr;
                     return bookings.value
                         .filter(b => b.userId === currentUser.value.uid && b.date >= todayStr)
                         .sort((a, b) => (a.date + a.timeSlot).localeCompare(b.date + b.timeSlot));
                 });
 
+                // Hitri iskalnik rezervacij: courtId_date_hour -> booking
+                const bookingMap = computed(() => {
+                    const m = new Map();
+                    for (const b of bookings.value) m.set(`${b.courtId}_${b.date}_${b.startHour}`, b);
+                    return m;
+                });
+
+                const visibleCourts = computed(() =>
+                    courtFilter.value === 'all' ? COURTS : COURTS.filter(c => c.id === courtFilter.value)
+                );
+
                 // Generate 1-hour slots from 06:00 to 22:00
                 function getTimeSlots(courtId) {
                     const slots = [];
-                    const todayStr = getTodayString();
-                    const now = new Date();
-                    const currentHour = now.getHours();
+                    const { todayStr, hour: currentHour } = getNowInfo();
 
                     for (let hour = 6; hour < 22; hour++) {
-                        const startStr = String(hour).padStart(2, '0') + ':00';
-                        const endStr = String(hour + 1).padStart(2, '0') + ':00';
-                        const slotLabel = `${startStr} - ${endStr}`;
-                        
-                        // Check if occupied in bookings array
-                        const booking = bookings.value.find(b => b.courtId === courtId && b.date === selectedDate.value && b.startHour === hour);
-                        
+                        const slotLabel = `${pad2(hour)}:00 - ${pad2(hour + 1)}:00`;
+
+                        const booking = bookingMap.value.get(`${courtId}_${selectedDate.value}_${hour}`);
                         const isOccupied = !!booking;
-                        const isUserBooking = isOccupied && currentUser.value && booking.userId === currentUser.value.uid;
-                        
-                        // Past time check
+                        const isUserBooking = isOccupied && !!currentUser.value && booking.userId === currentUser.value.uid;
+
                         let isPast = false;
                         if (selectedDate.value < todayStr) {
                             isPast = true;
@@ -1110,6 +1186,80 @@
                     return slots;
                 }
 
+                // ===== Tedenski pregled =====
+                const weekAnchor = ref(getTodayString());
+                const weekBounds = computed(() => getWeekBounds(weekAnchor.value));
+                const isCurrentWeek = computed(() => weekBounds.value.start === getWeekBounds(getNowInfo().todayStr).start);
+
+                const weekRangeLabel = computed(() => {
+                    const s = new Date(weekBounds.value.start + 'T00:00:00');
+                    const e = new Date(weekBounds.value.end + 'T00:00:00');
+                    if (s.getMonth() === e.getMonth()) {
+                        return `${s.getDate()}. – ${e.getDate()}. ${MONTHS_GEN[e.getMonth()]} ${e.getFullYear()}`;
+                    }
+                    const startYear = s.getFullYear() !== e.getFullYear() ? ' ' + s.getFullYear() : '';
+                    return `${s.getDate()}. ${MONTHS_GEN[s.getMonth()]}${startYear} – ${e.getDate()}. ${MONTHS_GEN[e.getMonth()]} ${e.getFullYear()}`;
+                });
+
+                const weekDays = computed(() => {
+                    const { todayStr, hour: curHour } = getNowInfo();
+                    const uid = currentUser.value ? currentUser.value.uid : null;
+                    const dows = ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
+                    const days = [];
+
+                    for (let i = 0; i < 7; i++) {
+                        const date = addDaysStr(weekBounds.value.start, i);
+                        const [, monthNum, dayNum] = date.split('-').map(Number);
+
+                        const courts = COURTS.map(c => {
+                            let free = 0;
+                            const cells = [];
+                            for (let hour = 6; hour < 22; hour++) {
+                                const b = bookingMap.value.get(`${c.id}_${date}_${hour}`);
+                                const isPast = date < todayStr || (date === todayStr && hour <= curHour);
+                                let status;
+                                if (b && uid && b.userId === uid) status = 'mine';
+                                else if (b) status = 'busy';
+                                else if (isPast) status = 'past';
+                                else { status = 'free'; free++; }
+
+                                const statusText = status === 'mine' ? 'Moja rezervacija'
+                                    : status === 'busy' ? 'Zasedeno' + (b && b.userName ? ` (${b.userName})` : '')
+                                    : status === 'past' ? 'Potekel' : 'Prosto';
+                                cells.push({ hour, status, title: `${pad2(hour)}:00 – ${pad2(hour + 1)}:00 · ${statusText}` });
+                            }
+                            return { id: c.id, n: c.n, name: c.name, cells, free };
+                        });
+
+                        days.push({
+                            date,
+                            dow: dows[i],
+                            dayNum,
+                            monthNum,
+                            isToday: date === todayStr,
+                            courts,
+                            totalFree: courts.reduce((sum, c) => sum + c.free, 0)
+                        });
+                    }
+                    return days;
+                });
+
+                function changeWeek(n) {
+                    weekAnchor.value = addDaysStr(weekAnchor.value, n * 7);
+                }
+
+                function goThisWeek() {
+                    weekAnchor.value = getTodayString();
+                }
+
+                // Skok iz tedenskega pregleda na urnik izbranega dne (in igrišča)
+                function openDay(date, courtId) {
+                    selectedDate.value = date;
+                    courtFilter.value = courtId || 'all';
+                    activeTab.value = 'schedule';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
                 function getSlotBgClass(slot) {
                     if (slot.isUserBooking) {
                         return 'bg-amber-100/90 border border-amber-300 text-slate-900';
@@ -1125,17 +1275,17 @@
 
                 // Date Navigation Functions
                 function changeDate(days) {
-                    const d = new Date(selectedDate.value + 'T00:00:00');
-                    d.setDate(d.getDate() + days);
-                    const y = d.getFullYear();
-                    const m = String(d.getMonth() + 1).padStart(2, '0');
-                    const da = String(d.getDate()).padStart(2, '0');
-                    selectedDate.value = `${y}-${m}-${da}`;
+                    selectedDate.value = addDaysStr(selectedDate.value, days);
                 }
 
                 function setToday() {
                     selectedDate.value = getTodayString();
                 }
+
+                // Če uporabnik izbriše datum v polju, se vrnemo na današnji dan
+                watch(selectedDate, (v) => {
+                    if (!v) selectedDate.value = getTodayString();
+                });
 
                 const authReady = ref(false);
                 const bookingsLoaded = ref(false);
@@ -1385,6 +1535,17 @@
                     showProfileModal,
                     toast,
                     formattedSelectedDate,
+                    tabs,
+                    legendItems,
+                    legendCls,
+                    rulerHours,
+                    visibleCourts,
+                    weekDays,
+                    weekRangeLabel,
+                    isCurrentWeek,
+                    changeWeek,
+                    goThisWeek,
+                    openDay,
                     todayUsage,
                     weekUsage,
                     userFutureBookings,
