@@ -1490,10 +1490,14 @@
 
                 async function clearUserTracking(uid) {
                     const sessions = await getDocs(query(collection(db, 'userSessions'), where('uid', '==', uid)));
-                    const refs = [
+                    const profileRefs = [
                         doc(db, 'userStats', uid),
                         doc(db, 'guests', uid),
-                        doc(db, 'presence', uid),
+                        doc(db, 'presence', uid)
+                    ];
+                    const profileSnapshots = await Promise.all(profileRefs.map(ref => getDoc(ref)));
+                    const refs = [
+                        ...profileRefs.filter((_, i) => profileSnapshots[i].exists()),
                         ...sessions.docs.map(session => session.ref)
                     ];
                     for (let i = 0; i < refs.length; i += 450) {
@@ -1521,7 +1525,7 @@
                         triggerToast('Beleženje ponastavljeno', 'Stara statistika in zgodovina sej sta izbrisani. Novi obiski se bodo beležili znova.', 'success');
                     } catch (e) {
                         console.error('Ponastavitev uporabniških evidenc ni uspela:', e);
-                        triggerToast('Napaka', 'Ponastavitev ni uspela. Preverite Firestore pravila.', 'error');
+                        triggerToast('Napaka', `Ponastavitev ni uspela (${e.code || 'neznana napaka'}). ${e.message || 'Preverite Firestore pravila.'}`, 'error');
                     }
                 }
 
@@ -1533,7 +1537,7 @@
                         triggerToast('Evidence izbrisane', 'Izbrisani so uporabniška statistika, profil gosta, prisotnost in zgodovina sej.', 'success');
                     } catch (e) {
                         console.error('Brisanje uporabniških evidenc ni uspelo:', e);
-                        triggerToast('Napaka', 'Brisanje ni uspelo. Preverite Firestore pravila.', 'error');
+                        triggerToast('Napaka', `Brisanje ni uspelo (${e.code || 'neznana napaka'}). ${e.message || 'Preverite Firestore pravila.'}`, 'error');
                     }
                 }
 
