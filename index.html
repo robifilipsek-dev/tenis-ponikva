@@ -1208,8 +1208,6 @@
             { id: 'info', icon: 'fa-solid fa-circle-info', short: 'Info', label: 'Pravila & Info' }
         ];
 
-        
-
         const MONTHS_GEN = ['januar', 'februar', 'marec', 'april', 'maj', 'junij', 'julij', 'avgust', 'september', 'oktober', 'november', 'december'];
 
         createApp({
@@ -1554,7 +1552,7 @@
                 const formattedSelectedDate = computed(() => {
                     if (!selectedDate.value) return '';
                     const d = new Date(selectedDate.value + 'T00:00:00');
-                    const days = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
+                    const days = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četurtek', 'Petek', 'Sobota'];
                     return `${days[d.getDay()]}, ${d.getDate()}. ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}`;
                 });
 
@@ -1965,6 +1963,7 @@
                     }
                 }
 
+                // POPRAVLJENA FUNKCIJA ZA PRIJAVO GOSTA
                 async function confirmGuest() {
                     const name = (guestName.value || '').trim();
                     const parts = name.split(/\s+/).filter(Boolean);
@@ -1974,22 +1973,40 @@
                     }
                     guestError.value = '';
                     guestBusy.value = true;
+
                     try {
                         userName.value = name;
                         localStorage.setItem('ponikva_user_name', name);
-                        let user = currentUser.value;
+
+                        let user = auth.currentUser;
+                        // Če brskalnik še ni prijavljen, izvedemo anonimno prijavo
                         if (!user) {
                             const cred = await signInAnonymously(auth);
                             user = cred.user;
                         }
-                        await saveGuestRecord(user, name);
-                        await setDoc(doc(db, 'userStats', user.uid), { name, firstName: parts[0], lastName: parts.slice(1).join(' '), isAnonymous: true, lastSeenAt: serverTimestamp() }, { merge: true });
-                        showGuestModal.value = false;
-                        registerUserSession(user);
-                        triggerToast('Prijavljeni kot gost', `Pozdravljeni, ${name}!`, 'success');
+
+                        if (user) {
+                            await saveGuestRecord(user, name);
+                            await setDoc(doc(db, 'userStats', user.uid), { 
+                                name, 
+                                firstName: parts[0], 
+                                lastName: parts.slice(1).join(' '), 
+                                isAnonymous: true, 
+                                lastSeenAt: serverTimestamp() 
+                            }, { merge: true });
+
+                            showGuestModal.value = false;
+                            registerUserSession(user);
+                            triggerToast('Prijavljeni kot gost', `Pozdravljeni, ${name}!`, 'success');
+                        }
                     } catch (e) {
-                        console.error(e);
-                        triggerToast('Prijava ni uspela', 'Preverite, ali je v Firebase omogočen "Anonymous" ponudnik.', 'error');
+                        console.error("Napaka pri anonimni prijavi:", e);
+                        if (!auth.currentUser) {
+                            guestError.value = 'Prijava ni uspela. Preverite, ali je v Firebase omogočen "Anonymous" ponudnik.';
+                        } else {
+                            // Če je uporabnik kljub napaki prijavljen
+                            showGuestModal.value = false;
+                        }
                     } finally {
                         guestBusy.value = false;
                     }
