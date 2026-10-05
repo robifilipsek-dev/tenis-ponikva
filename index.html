@@ -193,7 +193,12 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
-    </style>
+    
+        /* Mobilni datum: native koledar ostane znotraj vidnega okvirčka */
+        .date-picker-native { min-height: 42px; }
+        .date-picker-native::-webkit-calendar-picker-indicator { opacity: 0.9; cursor: pointer; padding: 2px; }
+        @media (max-width: 640px) { .date-picker-native { width: 10rem; } }
+</style>
 </head>
 <body class="text-slate-800 bg-slate-100 min-h-screen flex flex-col antialiased">
 
@@ -343,17 +348,29 @@
                             <i class="fa-solid fa-chevron-left"></i>
                         </button>
 
-                        <div class="relative flex-grow sm:flex-grow-0">
+                        <div class="relative flex-grow sm:flex-grow-0 w-40 sm:w-36">
                             <input
-                                type="text" inputmode="decimal" autocomplete="off" placeholder="dd.mm.llll"
+                                type="text"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                placeholder="dd.mm.llll"
                                 v-model="dateText"
-                                @input="onDateTextInput" @blur="commitDateText" @keyup.enter="$event.target.blur()"
-                                class="w-36 font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2 focus:ring-2 focus:ring-court-accent focus:outline-none text-sm"
+                                @input="onDateTextInput"
+                                @blur="commitDateText"
+                                @keyup.enter="$event.target.blur()"
+                                aria-label="Vnesi datum"
+                                class="w-full font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-2 focus:ring-2 focus:ring-court-accent focus:outline-none text-sm"
                             />
-                            <button type="button" @click="openDatePicker" title="Izberi iz koledarja" class="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-court-green">
+                            <button
+                                type="button"
+                                @click="openDatePicker"
+                                title="Izberi datum iz koledarja"
+                                aria-label="Odpri koledar"
+                                class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-court-green hover:bg-slate-100 transition"
+                            >
                                 <i class="fa-regular fa-calendar-days"></i>
                             </button>
-                            <input id="nativeDate" type="date" v-model="selectedDate" tabindex="-1" aria-hidden="true" class="absolute right-0 bottom-0 w-0 h-0 opacity-0 pointer-events-none" />
+                            <input id="nativeDate" type="date" v-model="selectedDate" tabindex="-1" aria-hidden="true" class="absolute pointer-events-none opacity-0 w-px h-px -z-10" />
                         </div>
 
                         <button @click="changeDate(1)" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition" title="Naslednji dan">
@@ -831,21 +848,64 @@
                 </div>
 
                 <!-- Uporabniki -->
-                <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-3">
-                    <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-users text-court-green"></i> Uporabniki <span class="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">{{ onlineCount }} trenutno aktivnih</span></h2>
-                    <p class="text-[11px] text-slate-500">Aktiven = aplikacijo je odprl v zadnjih 3 minutah. Seznam se polni od prve prijave po tej posodobitvi.</p>
-                    <div class="max-h-96 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl">
-                        <div v-for="u in presenceList" :key="u.id" class="flex items-center justify-between gap-3 px-3 py-2 text-xs">
-                            <span class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full" :class="u.online ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'"></span>
-                                <strong>{{ u.name || 'Brez imena' }}</strong>
-                                <span class="text-slate-500">{{ u.isAnonymous ? 'Gost' : (u.email || 'Google') }}</span>
-                            </span>
-                            <span class="flex items-center gap-2 text-slate-500">{{ u.online ? 'Aktiven zdaj' : 'Nazadnje ' + fmtTs(u.lastSeenMs) }}
-                                <button @click="removePresence(u.id)" title="Odstrani iz seznama" class="text-slate-400 hover:text-red-600"><i class="fa-solid fa-xmark"></i></button>
-                            </span>
+                <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div>
+                            <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-users text-court-green"></i> Uporabniki <span class="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">{{ onlineCount }} trenutno aktivnih</span></h2>
+                            <p class="text-[11px] text-slate-500 mt-1">Aktiven = aplikacija je bila uporabljena v zadnjih 3 minutah. Zgodovina obiskov se beleži od te posodobitve naprej.</p>
                         </div>
-                        <div v-if="presenceList.length === 0" class="p-4 text-slate-500 text-xs">Zaenkrat ni zabeleženih uporabnikov.</div>
+                        <div class="flex gap-2 text-[11px]">
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 text-slate-600">{{ userDirectory.length }} uporabnikov</span>
+                            <span class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700">{{ usersToday }} danes</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-slate-500">Skupaj</div><strong class="text-lg text-slate-900">{{ userDirectory.length }}</strong></div>
+                        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div class="text-emerald-700">Aktivni zdaj</div><strong class="text-lg text-emerald-800">{{ onlineCount }}</strong></div>
+                        <div class="p-3 rounded-xl bg-blue-50 border border-blue-200"><div class="text-blue-700">Danes</div><strong class="text-lg text-blue-800">{{ usersToday }}</strong></div>
+                        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200"><div class="text-amber-700">Obiski</div><strong class="text-lg text-amber-800">{{ totalVisits }}</strong></div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <input type="text" v-model="userSearch" placeholder="Išči uporabnika ..." class="flex-1 min-w-[12rem] px-3 py-2 rounded-lg border border-slate-300 text-xs">
+                        <select v-model="userTypeFilter" class="px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white">
+                            <option value="all">Vsi</option><option value="google">Google</option><option value="guest">Gostje</option><option value="online">Aktivni</option>
+                        </select>
+                    </div>
+
+                    <div class="max-h-[28rem] overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl">
+                        <div v-for="u in filteredUsers" :key="u.id" class="px-3 py-3 text-xs hover:bg-slate-50">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :class="u.online ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'"></span>
+                                        <strong class="text-slate-900 truncate">{{ u.name || 'Brez imena' }}</strong>
+                                        <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{{ u.isAnonymous ? 'Gost' : 'Google' }}</span>
+                                    </div>
+                                    <div class="text-slate-500 mt-1 truncate">{{ u.email || 'Anonimni uporabnik' }}</div>
+                                    <div class="text-slate-400 mt-1">Prvi obisk: {{ fmtTs(u.firstSeenMs) }} · Zadnji: {{ fmtTs(u.lastSeenMs) }}</div>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <div class="font-semibold text-slate-700">{{ u.visitCount || 0 }} obiskov</div>
+                                    <button @click="showUserHistory(u)" class="mt-1 px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">Zgodovina</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="filteredUsers.length === 0" class="p-4 text-slate-500 text-xs">Ni uporabnikov za izbrane filtre.</div>
+                    </div>
+
+                    <div v-if="selectedUserHistory" class="rounded-xl border border-blue-200 bg-blue-50/50 p-4 space-y-3">
+                        <div class="flex items-center justify-between gap-2">
+                            <div><strong class="text-sm text-slate-900">{{ selectedUserHistory.name || 'Brez imena' }}</strong><div class="text-[11px] text-slate-500">Zgodovina sej</div></div>
+                            <button @click="selectedUserHistory = null" class="text-slate-500 hover:text-red-600"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="max-h-48 overflow-y-auto space-y-1">
+                            <div v-for="s in selectedUserSessions" :key="s.id" class="flex justify-between gap-2 p-2 rounded-lg bg-white border border-slate-200 text-[11px]">
+                                <span>{{ fmtTs(s.startedAtMs) }}</span><span class="text-slate-500">Zadnja aktivnost {{ fmtTs(s.lastSeenMs) }}</span>
+                            </div>
+                            <div v-if="selectedUserSessions.length === 0" class="text-slate-500">Za tega uporabnika še ni zgodovinskih sej.</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -892,7 +952,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Ime igralca / nosilca rezervacije</label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Ime in priimek</label>
                     <input type="text" v-model="bookingUserName" placeholder="Vnesite vaše ime" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-court-accent focus:outline-none">
                 </div>
 
@@ -921,12 +981,12 @@
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <h3 class="font-display font-bold text-xl text-slate-900">Prijava kot gost</h3>
-                    <p class="text-xs text-slate-500 mt-1">Za nadaljevanje vpišite ime igralca oziroma nosilca rezervacije.</p>
+                    <p class="text-xs text-slate-500 mt-1">Za nadaljevanje vpišite svoje ime in priimek. Podatek se shrani v vaš profil, zato se vam ga ob naslednjih obiskih ne bo treba ponovno vpisovati.</p>
                 </div>
 
                 <div class="mb-2">
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Ime igralca / nosilca rezervacije</label>
-                    <input id="guestNameInput" type="text" v-model="guestName" @keyup.enter="confirmGuest" maxlength="40" placeholder="Vnesite vaše ime in priimek" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-court-accent focus:outline-none">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Ime in priimek</label>
+                    <input id="guestNameInput" type="text" v-model="guestName" @keyup.enter="confirmGuest" maxlength="40" placeholder="npr. Janez Novak" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-court-accent focus:outline-none">
                     <p v-if="guestError" class="text-[11px] text-red-600 mt-1">{{ guestError }}</p>
                 </div>
 
@@ -1241,6 +1301,17 @@
                 const settings = ref(JSON.parse(JSON.stringify(DEFAULT_SETTINGS)));
                 const closures = ref([]);
                 const presence = ref([]);
+                const userStats = ref([]);
+                const guests = ref([]);
+                const userSessions = ref([]);
+                const userSearch = ref('');
+                const userTypeFilter = ref('all');
+                const selectedUserHistory = ref(null);
+                const selectedUserSessions = computed(() => {
+                    const id = selectedUserHistory.value?.id;
+                    if (!id) return [];
+                    return userSessions.value.filter(s => s.uid === id).sort((a,b) => (b.startedAtMs || 0) - (a.startedAtMs || 0)).slice(0, 50);
+                });
                 const courts = COURTS;
                 const pad = pad2;
                 const courtName = (id) => (COURTS.find(c => c.id === id) || { name: id }).name;
@@ -1294,6 +1365,9 @@
                     unsubExtra.forEach(u => u());
                     unsubExtra = [];
                     presence.value = [];
+                    userStats.value = [];
+                    guests.value = [];
+                    userSessions.value = [];
                     closures.value = [];
                 }
                 function startExtraListeners() {
@@ -1314,6 +1388,15 @@
                         unsubExtra.push(onSnapshot(collection(db, 'presence'), (snap) => {
                             const l = []; snap.forEach(d => l.push({ id: d.id, ...d.data() })); presence.value = l;
                         }, (e) => console.warn('Prisotnost ni berljiva:', e)));
+                        unsubExtra.push(onSnapshot(collection(db, 'userStats'), (snap) => {
+                            const l = []; snap.forEach(d => l.push({ id: d.id, ...d.data() })); userStats.value = l;
+                        }, (e) => console.warn('Statistika uporabnikov ni berljiva:', e)));
+                        unsubExtra.push(onSnapshot(collection(db, 'guests'), (snap) => {
+                            const l = []; snap.forEach(d => l.push({ id: d.id, ...d.data() })); guests.value = l;
+                        }, (e) => console.warn('Gostje niso berljivi:', e)));
+                        unsubExtra.push(onSnapshot(collection(db, 'userSessions'), (snap) => {
+                            const l = []; snap.forEach(d => l.push({ id: d.id, ...d.data() })); userSessions.value = l;
+                        }, (e) => console.warn('Seje uporabnikov niso berljive:', e)));
                     }
                 }
 
@@ -1326,6 +1409,9 @@
                             uid: u.uid, name: userName.value || u.displayName || '', email: u.email || '',
                             isAnonymous: !!u.isAnonymous, online: true, lastSeen: serverTimestamp()
                         }, { merge: true });
+                        const sessionId = sessionStorage.getItem('ponikva_session_id');
+                        if (sessionId) await setDoc(doc(db, 'userSessions', sessionId), { lastSeenAt: serverTimestamp(), name: userName.value || u.displayName || '', email: u.email || '' }, { merge: true });
+                        await setDoc(doc(db, 'userStats', u.uid), { lastSeenAt: serverTimestamp(), name: userName.value || u.displayName || '', email: u.email || '', isAnonymous: !!u.isAnonymous }, { merge: true });
                     } catch (e) { /* pravila še niso posodobljena */ }
                 }
                 setInterval(() => { if (document.visibilityState === 'visible') sendPresence(); }, 60000);
@@ -1339,6 +1425,43 @@
                     }).sort((a, b) => (b.online - a.online) || (b.lastSeenMs - a.lastSeenMs));
                 });
                 const onlineCount = computed(() => presenceList.value.filter(u => u.online).length);
+
+                const userDirectory = computed(() => {
+                    const map = new Map();
+                    const merge = (u) => {
+                        if (!u || !u.id) return;
+                        const old = map.get(u.id) || { id: u.id };
+                        const merged = { ...old, ...u };
+                        if (!merged.name) merged.name = old.name || '';
+                        map.set(u.id, merged);
+                    };
+                    userStats.value.forEach(u => merge({ id: u.id, ...u }));
+                    guests.value.forEach(u => merge({ id: u.id, ...u, isAnonymous: true, name: u.name }));
+                    presenceList.value.forEach(u => merge(u));
+                    bookings.value.forEach(b => merge({ id: b.userId, name: b.userName, isAnonymous: false }));
+                    return Array.from(map.values()).map(u => {
+                        const p = presenceList.value.find(x => x.id === u.id);
+                        const st = userStats.value.find(x => x.id === u.id);
+                        const ms = p?.lastSeenMs || (st?.lastSeenAt?.toMillis ? st.lastSeenAt.toMillis() : 0) || (u.lastLoginAt?.toMillis ? u.lastLoginAt.toMillis() : 0);
+                        const first = st?.firstSeenAt?.toMillis ? st.firstSeenAt.toMillis() : (u.createdAt?.toMillis ? u.createdAt.toMillis() : 0);
+                        return { ...u, online: !!p?.online, lastSeenMs: ms, firstSeenMs: first, visitCount: st?.visitCount || 0 };
+                    }).sort((a,b) => (b.online-a.online) || (b.lastSeenMs-a.lastSeenMs));
+                });
+                const filteredUsers = computed(() => {
+                    const q = userSearch.value.trim().toLowerCase();
+                    return userDirectory.value.filter(u => {
+                        const matchesQ = !q || (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
+                        const matchesType = userTypeFilter.value === 'all' || (userTypeFilter.value === 'online' ? u.online : userTypeFilter.value === 'guest' ? u.isAnonymous : !u.isAnonymous);
+                        return matchesQ && matchesType;
+                    });
+                });
+                const totalVisits = computed(() => userStats.value.reduce((n,u) => n + (Number(u.visitCount) || 0), 0));
+                const usersToday = computed(() => userStats.value.filter(u => {
+                    const ms = u.lastSeenAt?.toMillis ? u.lastSeenAt.toMillis() : 0;
+                    const d = ms ? new Date(ms) : null, now = new Date();
+                    return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+                }).length);
+                function showUserHistory(u) { selectedUserHistory.value = u; }
                 function fmtTs(ms) {
                     if (!ms) return '-';
                     const d = new Date(ms);
@@ -1660,6 +1783,33 @@
                     startExtraListeners();
                 }
 
+                let sessionUid = null;
+                async function registerUserSession(user) {
+                    if (!user || sessionUid === user.uid) return;
+                    const sessionKey = 'ponikva_session_id';
+                    const sessionUserKey = 'ponikva_session_uid';
+                    let sessionId = sessionStorage.getItem(sessionKey);
+                    const existingSessionUid = sessionStorage.getItem(sessionUserKey);
+                    if (sessionId && existingSessionUid === user.uid) { sessionUid = user.uid; return; }
+                    sessionUid = user.uid;
+                    sessionId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
+                    sessionStorage.setItem(sessionKey, sessionId);
+                    sessionStorage.setItem(sessionUserKey, user.uid);
+                    const statsRef = doc(db, 'userStats', user.uid);
+                    const nowMs = Date.now();
+                    try {
+                        const stat = userStats.value.find(x => x.id === user.uid);
+                        const currentVisitCount = Number(stat?.visitCount || 0);
+                        await setDoc(statsRef, {
+                            uid: user.uid, name: userName.value || user.displayName || '', email: user.email || '',
+                            isAnonymous: !!user.isAnonymous, lastSeenAt: serverTimestamp(),
+                            ...(currentVisitCount ? { visitCount: currentVisitCount + 1 } : { visitCount: 1, firstSeenAt: serverTimestamp() })
+                        }, { merge: true });
+                        const sessionRef = doc(db, 'userSessions', sessionId);
+                        await setDoc(sessionRef, { uid: user.uid, name: userName.value || user.displayName || '', email: user.email || '', isAnonymous: !!user.isAnonymous, startedAt: serverTimestamp(), lastSeenAt: serverTimestamp() }, { merge: true });
+                    } catch (e) { console.warn('Zapis uporabniške zgodovine ni uspel:', e); }
+                }
+
                 onMounted(() => {
                     getRedirectResult(auth).catch((e) => console.error(e));
 
@@ -1675,6 +1825,7 @@
                             }
                             startBookingsListener();
                             sendPresence();
+                            registerUserSession(user);
                         } else {
                             stopBookingsListener();
                         }
@@ -1804,10 +1955,10 @@
                 // Zapis gosta v Firestore (zbirka "guests"), da ga vidiš v Firebase konzoli
                 async function saveGuestRecord(user, name) {
                     try {
+                        const parts = (name || '').trim().split(/\s+/).filter(Boolean);
                         await setDoc(doc(db, 'guests', user.uid), {
-                            name: name,
-                            uid: user.uid,
-                            lastLoginAt: serverTimestamp()
+                            name: name, firstName: parts[0] || '', lastName: parts.slice(1).join(' ') || '',
+                            uid: user.uid, lastLoginAt: serverTimestamp()
                         }, { merge: true });
                     } catch (e) {
                         console.warn('Zapis gosta ni uspel (preverite Firestore pravila):', e);
@@ -1816,8 +1967,9 @@
 
                 async function confirmGuest() {
                     const name = (guestName.value || '').trim();
-                    if (name.length < 2) {
-                        guestError.value = 'Vpišite ime (vsaj 2 znaka).';
+                    const parts = name.split(/\s+/).filter(Boolean);
+                    if (parts.length < 2) {
+                        guestError.value = 'Vpišite ime in priimek.';
                         return;
                     }
                     guestError.value = '';
@@ -1831,7 +1983,9 @@
                             user = cred.user;
                         }
                         await saveGuestRecord(user, name);
+                        await setDoc(doc(db, 'userStats', user.uid), { name, firstName: parts[0], lastName: parts.slice(1).join(' '), isAnonymous: true, lastSeenAt: serverTimestamp() }, { merge: true });
                         showGuestModal.value = false;
+                        registerUserSession(user);
                         triggerToast('Prijavljeni kot gost', `Pozdravljeni, ${name}!`, 'success');
                     } catch (e) {
                         console.error(e);
@@ -1849,6 +2003,9 @@
 
                 async function logout() {
                     try { if (currentUser.value) await setDoc(doc(db, 'presence', currentUser.value.uid), { online: false, lastSeen: serverTimestamp() }, { merge: true }); } catch (e) {}
+                    sessionStorage.removeItem('ponikva_session_id');
+                    sessionStorage.removeItem('ponikva_session_uid');
+                    sessionUid = null;
                     await signOut(auth);
                     triggerToast('Odjavljeni', 'Uspešno ste se odjavili.', 'info');
                 }
@@ -1873,6 +2030,7 @@
                     openHoursText, openHoursRange, settingsForm, saveSettings, closureForm, sortedClosures, addClosure, removeClosure,
                     manualForm, addManualBooking, adminDate, adminSearch, adminOnlyFuture, adminBookings,
                     presenceList, onlineCount, fmtTs, removePresence,
+                    userDirectory, filteredUsers, userSearch, userTypeFilter, usersToday, totalVisits, selectedUserHistory, selectedUserSessions, showUserHistory,
                     dateText, onDateTextInput, commitDateText, openDatePicker,
                     activeTab,
                     selectedDate,
