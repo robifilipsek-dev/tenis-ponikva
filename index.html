@@ -263,23 +263,21 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     
                     <div>
-                        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-2">
-                            <i class="fa-solid fa-location-dot text-clay-500"></i> Ponikva
-                        </div>
                         <h1 class="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
                             Spletna rezervacija igrišč
                         </h1>
                         <p class="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-                            Izberite termin in igrišče ter uživajte v tenisu. Urnik obratovanja vsak dan od <strong>06:00 do 22:00</strong>.
+                            Izberite termin in igrišče ter igrajte tenis. Obratujemo vsak dan od <strong>{{ openHoursText }}</strong>.
                         </p>
                     </div>
 
                     <!-- Quick Quota / Info Cards -->
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                         <div class="bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
-                            <span class="text-slate-400 font-medium">Igrišči</span>
+                            <span class="text-slate-400 font-medium">Igrišča</span>
                             <span class="text-sm font-bold text-court-highlight flex items-center gap-1.5 mt-0.5">
-                                <i class="fa-solid fa-border-all text-clay-500"></i> 2 x Peščeno
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-clay-500" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2.5" y="5" width="19" height="14" rx="1"/><path d="M12 5v14"/></svg>
+                                2 peščeni igrišči
                             </span>
                         </div>
                         <div class="bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
@@ -303,6 +301,11 @@
         <!-- MAIN CONTENT AREA -->
         <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
             
+            <div v-if="currentUser && statusBanner" class="mb-4 p-4 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 text-xs sm:text-sm flex items-start gap-3">
+                <i class="fa-solid fa-circle-info text-slate-500 mt-0.5"></i>
+                <div><strong>{{ statusBanner.title }}</strong><span v-if="statusBanner.text" class="block mt-0.5">{{ statusBanner.text }}</span></div>
+            </div>
+
             <!-- NAVIGATION TABS -->
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-slate-200 pb-3">
                 <nav class="flex w-full lg:w-auto gap-1.5 sm:gap-3">
@@ -341,11 +344,16 @@
                         </button>
 
                         <div class="relative flex-grow sm:flex-grow-0">
-                            <input 
-                                type="date" 
-                                v-model="selectedDate" 
-                                class="w-full sm:w-auto font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-court-accent focus:outline-none text-sm"
+                            <input
+                                type="text" inputmode="decimal" autocomplete="off" placeholder="dd.mm.llll"
+                                v-model="dateText"
+                                @input="onDateTextInput" @blur="commitDateText" @keyup.enter="$event.target.blur()"
+                                class="w-36 font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2 focus:ring-2 focus:ring-court-accent focus:outline-none text-sm"
                             />
+                            <button type="button" @click="openDatePicker" title="Izberi iz koledarja" class="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-court-green">
+                                <i class="fa-regular fa-calendar-days"></i>
+                            </button>
+                            <input id="nativeDate" type="date" v-model="selectedDate" tabindex="-1" aria-hidden="true" class="absolute right-0 bottom-0 w-0 h-0 opacity-0 pointer-events-none" />
                         </div>
 
                         <button @click="changeDate(1)" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition" title="Naslednji dan">
@@ -451,8 +459,11 @@
                                     <p class="text-xs text-court-lime/90 font-medium">Peščena podlaga (Rdeči pesek)</p>
                                 </div>
                             </div>
-                            <span class="text-xs bg-emerald-900/60 border border-emerald-400/30 text-emerald-300 font-semibold px-2.5 py-1 rounded-full">
+                            <span v-if="courtIsActive(court.id, selectedDate)" class="text-xs bg-emerald-900/60 border border-emerald-400/30 text-emerald-300 font-semibold px-2.5 py-1 rounded-full">
                                 Aktivno
+                            </span>
+                            <span v-else class="text-xs bg-slate-500/40 border border-slate-300/30 text-slate-300 font-semibold px-2.5 py-1 rounded-full">
+                                Neaktivno
                             </span>
                         </div>
 
@@ -476,6 +487,9 @@
                                         <span v-else-if="slot.isOccupied" class="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 bg-slate-200/80 px-2 py-0.5 rounded-md">
                                             <i class="fa-solid fa-lock text-slate-500"></i> Zasedeno ({{ slot.booking.userName }})
                                         </span>
+                                        <span v-else-if="slot.isClosed" :title="slot.closedNote" class="inline-flex items-center gap-1 text-xs font-medium text-slate-400 italic">
+                                            Zaprt<span v-if="slot.closedNote" class="not-italic">({{ slot.closedNote }})</span>
+                                        </span>
                                         <span v-else-if="slot.isPast" class="inline-flex items-center gap-1 text-xs font-medium text-slate-400 italic">
                                             Potekel
                                         </span>
@@ -495,10 +509,17 @@
                                     </button>
 
                                     <button
-                                        v-else-if="!slot.isOccupied && !slot.isPast"
+                                        v-else-if="!slot.isOccupied && !slot.isPast && !slot.isClosed"
                                         @click="promptBookSlot(court.id, slot)"
                                         class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition flex items-center gap-1">
                                         <i class="fa-solid fa-plus"></i> Rezerviraj
+                                    </button>
+
+                                    <button
+                                        v-else-if="isAdmin && slot.isOccupied"
+                                        @click="promptCancelBooking(slot.booking)"
+                                        class="px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-xs font-semibold border border-red-300 transition flex items-center gap-1">
+                                        <i class="fa-solid fa-trash-can"></i> Izbriši (skrbnik)
                                     </button>
 
                                     <span v-else class="text-xs text-slate-400 font-medium px-2 py-1">
@@ -570,7 +591,7 @@
                 <!-- Days -->
                 <template v-else-if="currentUser">
                     <p class="text-[11px] text-slate-500 px-1">
-                        Vsaka kocka = 1 ura (06:00–22:00). Številka desno = število prostih ur. Tapnite dan ali igrišče za odpiranje urnika.
+                        Vsaka kocka = 1 ura ({{ openHoursRange.replace(' - ', '–') }}). Številka desno = število prostih ur. Tapnite dan ali igrišče za odpiranje urnika.
                     </p>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -728,11 +749,104 @@
                             <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">Delovni čas igrišč</h3>
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 flex justify-between">
                                 <span>Vse dni v tednu (Ponedeljek - Nedelja):</span>
-                                <span class="font-bold text-court-green">06:00 - 22:00</span>
+                                <span class="font-bold text-court-green">{{ openHoursRange }}</span>
                             </div>
                         </div>
                     </div>
 
+                </div>
+            </div>
+
+            <!-- TAB: SKRBNIK -->
+            <div v-if="isAdmin" v-show="activeTab === 'admin'" class="space-y-6">
+
+                <!-- Stanje igrišč -->
+                <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
+                    <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-sliders text-court-green"></i> Stanje igrišč in obratovanje</h2>
+                    <div class="grid sm:grid-cols-2 gap-3">
+                        <label v-for="c in courts" :key="c.id" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 cursor-pointer">
+                            <span class="font-semibold text-sm text-slate-800">{{ c.name }}</span>
+                            <span class="flex items-center gap-2 text-xs font-semibold" :class="settingsForm.courts[c.id] ? 'text-emerald-700' : 'text-slate-400'">
+                                {{ settingsForm.courts[c.id] ? 'Aktivno' : 'Neaktivno' }}
+                                <input type="checkbox" v-model="settingsForm.courts[c.id]" class="w-5 h-5 accent-emerald-600">
+                            </span>
+                        </label>
+                    </div>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-semibold text-slate-600">
+                        <label>Začetek sezone<input type="date" v-model="settingsForm.seasonStart" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Konec sezone<input type="date" v-model="settingsForm.seasonEnd" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Odprtje (ura)<input type="number" min="0" max="23" v-model.number="settingsForm.openHour" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Zaprtje (ura)<input type="number" min="1" max="24" v-model.number="settingsForm.closeHour" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Dnevna kvota (ur)<input type="number" min="1" max="16" v-model.number="settingsForm.dailyLimit" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Tedenska kvota (ur)<input type="number" min="1" max="50" v-model.number="settingsForm.weeklyLimit" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label class="sm:col-span-2">Obvestilo za uporabnike (neobvezno)<input type="text" maxlength="160" v-model="settingsForm.notice" placeholder="npr. Igrišči sta zaprti do pomladi" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Izven sezone so igrišča prikazana kot Neaktivno, termini pa kot Zaprt. Prazna datuma = brez omejitve sezone.</p>
+                    <button @click="saveSettings" class="px-4 py-2 rounded-xl bg-court-green hover:bg-court-dark text-white text-sm font-semibold shadow-sm">Shrani nastavitve</button>
+                </div>
+
+                <!-- Zaprtja -->
+                <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
+                    <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-ban text-court-green"></i> Zaprtja (turnir, vzdrževanje, dež)</h2>
+                    <div class="grid sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs font-semibold text-slate-600">
+                        <label>Igrišče<select v-model="closureForm.courtId" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"><option value="all">Obe igrišči</option><option v-for="c in courts" :key="c.id" :value="c.id">{{ c.name }}</option></select></label>
+                        <label>Od datuma<input type="date" v-model="closureForm.date" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Do datuma (neobvezno)<input type="date" v-model="closureForm.dateTo" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Od ure<input type="number" min="0" max="23" v-model.number="closureForm.fromHour" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Do ure<input type="number" min="1" max="24" v-model.number="closureForm.toHour" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Opomba<input type="text" maxlength="60" v-model="closureForm.note" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                    </div>
+                    <button @click="addClosure" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold">Dodaj zaprtje</button>
+                    <div v-if="closures.length === 0" class="text-xs text-slate-500">Ni zaprtij.</div>
+                    <div v-for="c in sortedClosures" :key="c.id" class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                        <span><strong>{{ c.courtId === 'all' ? 'Obe igrišči' : courtName(c.courtId) }}</strong> · {{ c.date }}<span v-if="c.dateTo && c.dateTo !== c.date"> → {{ c.dateTo }}</span> · {{ pad(c.fromHour) }}:00–{{ pad(c.toHour) }}:00<span v-if="c.note" class="text-slate-500"> · {{ c.note }}</span></span>
+                        <button @click="removeClosure(c.id)" class="px-2.5 py-1 rounded-lg bg-red-100 text-red-700 border border-red-300 font-semibold"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+
+                <!-- Rezervacije -->
+                <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
+                    <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-calendar-check text-court-green"></i> Vse rezervacije</h2>
+                    <div class="grid sm:grid-cols-5 gap-3 text-xs font-semibold text-slate-600 items-end p-3 rounded-xl bg-slate-50 border border-slate-200">
+                        <label>Igrišče<select v-model="manualForm.courtId" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"><option v-for="c in courts" :key="c.id" :value="c.id">{{ c.name }}</option></select></label>
+                        <label>Datum<input type="date" v-model="manualForm.date" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Ura začetka<input type="number" min="0" max="23" v-model.number="manualForm.hour" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Ime / opomba<input type="text" maxlength="40" v-model="manualForm.name" placeholder="npr. Trening" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <button @click="addManualBooking" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold">Dodaj rezervacijo</button>
+                    </div>
+                    <div class="flex flex-wrap gap-3 items-center text-xs">
+                        <input type="date" v-model="adminDate" class="px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        <input type="text" v-model="adminSearch" placeholder="Išči po imenu ..." class="px-3 py-2 rounded-lg border border-slate-300 text-sm flex-1 min-w-[10rem]">
+                        <label class="flex items-center gap-1.5 font-semibold text-slate-600"><input type="checkbox" v-model="adminOnlyFuture" class="accent-emerald-600"> Samo prihodnje</label>
+                        <button v-if="adminDate" @click="adminDate = ''" class="text-slate-500 underline">Počisti datum</button>
+                    </div>
+                    <div class="text-[11px] text-slate-500">Prikazanih {{ adminBookings.length }} rezervacij.</div>
+                    <div class="max-h-96 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl">
+                        <div v-for="b in adminBookings" :key="b.id" class="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                            <span><strong>{{ b.date }}</strong> · {{ b.timeSlot }} · {{ courtName(b.courtId) }} · {{ b.userName }}</span>
+                            <button @click="promptCancelBooking(b)" class="px-2.5 py-1 rounded-lg bg-red-100 text-red-700 border border-red-300 font-semibold"><i class="fa-solid fa-trash-can"></i> Izbriši</button>
+                        </div>
+                        <div v-if="adminBookings.length === 0" class="p-4 text-slate-500 text-xs">Ni rezervacij za izbrane filtre.</div>
+                    </div>
+                </div>
+
+                <!-- Uporabniki -->
+                <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-3">
+                    <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-users text-court-green"></i> Uporabniki <span class="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">{{ onlineCount }} trenutno aktivnih</span></h2>
+                    <p class="text-[11px] text-slate-500">Aktiven = aplikacijo je odprl v zadnjih 3 minutah. Seznam se polni od prve prijave po tej posodobitvi.</p>
+                    <div class="max-h-96 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl">
+                        <div v-for="u in presenceList" :key="u.id" class="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                            <span class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full" :class="u.online ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'"></span>
+                                <strong>{{ u.name || 'Brez imena' }}</strong>
+                                <span class="text-slate-500">{{ u.isAnonymous ? 'Gost' : (u.email || 'Google') }}</span>
+                            </span>
+                            <span class="flex items-center gap-2 text-slate-500">{{ u.online ? 'Aktiven zdaj' : 'Nazadnje ' + fmtTs(u.lastSeenMs) }}
+                                <button @click="removePresence(u.id)" title="Odstrani iz seznama" class="text-slate-400 hover:text-red-600"><i class="fa-solid fa-xmark"></i></button>
+                            </span>
+                        </div>
+                        <div v-if="presenceList.length === 0" class="p-4 text-slate-500 text-xs">Zaenkrat ni zabeleženih uporabnikov.</div>
+                    </div>
                 </div>
             </div>
 
@@ -951,8 +1065,7 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ===== Omejitve =====
-        const DAILY_LIMIT = 2;   // ur na dan
-        const WEEKLY_LIMIT = 4;  // ur na teden
+        const ADMIN_EMAIL = 'robi.filipsek@gmail.com';
 
         // ===== FIREBASE NASTAVITVE =====
         const firebaseConfig = {
@@ -1023,23 +1136,19 @@
             { key: 'free', label: 'Prosto', cls: 'bg-emerald-200 border-emerald-400' },
             { key: 'mine', label: 'Moja rezervacija', cls: 'bg-amber-500 border-amber-600' },
             { key: 'busy', label: 'Zasedeno', cls: 'bg-slate-400 border-slate-500' },
-            { key: 'past', label: 'Potekel', cls: 'bg-slate-100 border-slate-300' }
+            { key: 'past', label: 'Potekel', cls: 'bg-slate-100 border-slate-300' },
+            { key: 'closed', label: 'Zaprt', cls: 'bg-slate-100 border-slate-300' }
         ];
         const legendCls = Object.fromEntries(legendItems.map(i => [i.key, i.cls]));
 
-        const tabs = [
+        const baseTabs = [
             { id: 'schedule', icon: 'fa-solid fa-calendar-days', short: 'Urnik', label: 'Urnik & Rezervacija' },
             { id: 'week', icon: 'fa-solid fa-table-cells', short: 'Teden', label: 'Tedenski pregled' },
             { id: 'myBookings', icon: 'fa-solid fa-clock-rotate-left', short: 'Moje', label: 'Moje rezervacije' },
             { id: 'info', icon: 'fa-solid fa-circle-info', short: 'Info', label: 'Pravila & Info' }
         ];
 
-        const rulerHours = [6, 10, 14, 18, 22].map(h => ({
-            hour: h,
-            label: pad2(h),
-            left: ((h - 6) / 16 * 100) + '%',
-            shift: h === 6 ? 'none' : (h === 22 ? 'translateX(-100%)' : 'translateX(-50%)')
-        }));
+        
 
         const MONTHS_GEN = ['januar', 'februar', 'marec', 'april', 'maj', 'junij', 'julij', 'avgust', 'september', 'oktober', 'november', 'december'];
 
@@ -1126,6 +1235,198 @@
                 });
                 checkInstallState();
 
+
+                // ===== Nastavitve, zaprtja, skrbnik, prisotnost =====
+                const DEFAULT_SETTINGS = { openHour: 6, closeHour: 22, dailyLimit: 2, weeklyLimit: 4, seasonStart: '', seasonEnd: '', notice: '', courts: { court1: { active: true }, court2: { active: true } } };
+                const settings = ref(JSON.parse(JSON.stringify(DEFAULT_SETTINGS)));
+                const closures = ref([]);
+                const presence = ref([]);
+                const courts = COURTS;
+                const pad = pad2;
+                const courtName = (id) => (COURTS.find(c => c.id === id) || { name: id }).name;
+
+                const isAdmin = computed(() => !!currentUser.value && !currentUser.value.isAnonymous
+                    && (currentUser.value.email || '').toLowerCase() === ADMIN_EMAIL && currentUser.value.emailVerified !== false);
+
+                const tabs = computed(() => isAdmin.value ? [...baseTabs, { id: 'admin', icon: 'fa-solid fa-user-shield', short: 'Admin', label: 'Skrbnik' }] : baseTabs);
+                const DAILY_LIMIT = computed(() => settings.value.dailyLimit);
+                const WEEKLY_LIMIT = computed(() => settings.value.weeklyLimit);
+                const openHoursText = computed(() => `${pad2(settings.value.openHour)}:00 do ${pad2(settings.value.closeHour)}:00`);
+                const openHoursRange = computed(() => `${pad2(settings.value.openHour)}:00 - ${pad2(settings.value.closeHour)}:00`);
+
+                const rulerHours = computed(() => {
+                    const o = settings.value.openHour, n = settings.value.closeHour - o;
+                    const hs = [...new Set([0, .25, .5, .75, 1].map(f => Math.round(o + f * n)))];
+                    return hs.map(h => ({
+                        hour: h, label: pad2(h), left: ((h - o) / n * 100) + '%',
+                        shift: h === o ? 'none' : (h === o + n ? 'translateX(-100%)' : 'translateX(-50%)')
+                    }));
+                });
+
+                function courtIsActive(courtId, date) {
+                    const s = settings.value;
+                    if (s.courts && s.courts[courtId] && s.courts[courtId].active === false) return false;
+                    if (s.seasonStart && date < s.seasonStart) return false;
+                    if (s.seasonEnd && date > s.seasonEnd) return false;
+                    return true;
+                }
+
+                function closedInfo(courtId, date, hour) {
+                    if (!courtIsActive(courtId, date)) return { note: '' };
+                    const c = closures.value.find(x => (x.courtId === 'all' || x.courtId === courtId)
+                        && date >= x.date && date <= (x.dateTo || x.date) && hour >= x.fromHour && hour < x.toHour);
+                    return c ? { note: c.note || '' } : null;
+                }
+
+                const statusBanner = computed(() => {
+                    const s = settings.value, today = getNowInfo().todayStr;
+                    const inactive = COURTS.filter(c => !courtIsActive(c.id, today));
+                    if (!inactive.length && !s.notice) return null;
+                    let title = '';
+                    if (inactive.length === COURTS.length) title = 'Igrišči sta trenutno neaktivni.';
+                    else if (inactive.length) title = inactive.map(c => c.name).join(', ') + ' je trenutno neaktivno.';
+                    else title = 'Obvestilo';
+                    return { title, text: s.notice };
+                });
+
+                let unsubExtra = [];
+                function stopExtraListeners() {
+                    unsubExtra.forEach(u => u());
+                    unsubExtra = [];
+                    presence.value = [];
+                    closures.value = [];
+                }
+                function startExtraListeners() {
+                    unsubExtra.forEach(u => u());
+                    unsubExtra = [];
+                    unsubExtra.push(onSnapshot(doc(db, 'settings', 'main'), (snap) => {
+                        const d = snap.exists() ? snap.data() : {};
+                        settings.value = {
+                            ...DEFAULT_SETTINGS, ...d,
+                            courts: { ...DEFAULT_SETTINGS.courts, ...(d.courts || {}) }
+                        };
+                        if (activeTab.value !== 'admin') loadSettingsForm();
+                    }, (e) => console.warn('Nastavitve niso berljive (preverite Firestore pravila):', e)));
+                    unsubExtra.push(onSnapshot(collection(db, 'closures'), (snap) => {
+                        const l = []; snap.forEach(d => l.push({ id: d.id, ...d.data() })); closures.value = l;
+                    }, (e) => console.warn('Zaprtja niso berljiva:', e)));
+                    if (isAdmin.value) {
+                        unsubExtra.push(onSnapshot(collection(db, 'presence'), (snap) => {
+                            const l = []; snap.forEach(d => l.push({ id: d.id, ...d.data() })); presence.value = l;
+                        }, (e) => console.warn('Prisotnost ni berljiva:', e)));
+                    }
+                }
+
+                // Prisotnost (heartbeat vsako minuto)
+                async function sendPresence() {
+                    const u = currentUser.value;
+                    if (!u) return;
+                    try {
+                        await setDoc(doc(db, 'presence', u.uid), {
+                            uid: u.uid, name: userName.value || u.displayName || '', email: u.email || '',
+                            isAnonymous: !!u.isAnonymous, online: true, lastSeen: serverTimestamp()
+                        }, { merge: true });
+                    } catch (e) { /* pravila še niso posodobljena */ }
+                }
+                setInterval(() => { if (document.visibilityState === 'visible') sendPresence(); }, 60000);
+                document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sendPresence(); });
+
+                const presenceList = computed(() => {
+                    const now = nowTick.value;
+                    return presence.value.map(u => {
+                        const ms = u.lastSeen && u.lastSeen.toMillis ? u.lastSeen.toMillis() : 0;
+                        return { ...u, lastSeenMs: ms, online: u.online !== false && now - ms <= 180000 };
+                    }).sort((a, b) => (b.online - a.online) || (b.lastSeenMs - a.lastSeenMs));
+                });
+                const onlineCount = computed(() => presenceList.value.filter(u => u.online).length);
+                function fmtTs(ms) {
+                    if (!ms) return '-';
+                    const d = new Date(ms);
+                    return `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+                }
+                async function removePresence(id) {
+                    try { await deleteDoc(doc(db, 'presence', id)); } catch (e) { triggerToast('Napaka', 'Brisanje ni uspelo.', 'error'); }
+                }
+
+                // Skrbniški obrazci
+                const settingsForm = ref({ courts: { court1: true, court2: true }, openHour: 6, closeHour: 22, dailyLimit: 2, weeklyLimit: 4, seasonStart: '', seasonEnd: '', notice: '' });
+                function loadSettingsForm() {
+                    const s = settings.value;
+                    settingsForm.value = {
+                        courts: { court1: s.courts.court1.active !== false, court2: s.courts.court2.active !== false },
+                        openHour: s.openHour, closeHour: s.closeHour, dailyLimit: s.dailyLimit, weeklyLimit: s.weeklyLimit,
+                        seasonStart: s.seasonStart || '', seasonEnd: s.seasonEnd || '', notice: s.notice || ''
+                    };
+                }
+                watch(activeTab, (t) => { if (t === 'admin') loadSettingsForm(); });
+
+                async function saveSettings() {
+                    const f = settingsForm.value;
+                    const ok = [f.openHour, f.closeHour, f.dailyLimit, f.weeklyLimit].every(Number.isInteger);
+                    if (!ok || f.openHour < 0 || f.closeHour > 24 || f.openHour >= f.closeHour || f.dailyLimit < 1 || f.weeklyLimit < 1) {
+                        triggerToast('Napačne vrednosti', 'Preverite ure obratovanja in kvote.', 'error'); return;
+                    }
+                    if (f.seasonStart && f.seasonEnd && f.seasonStart > f.seasonEnd) {
+                        triggerToast('Napačna sezona', 'Začetek sezone mora biti pred koncem.', 'error'); return;
+                    }
+                    try {
+                        await setDoc(doc(db, 'settings', 'main'), {
+                            openHour: f.openHour, closeHour: f.closeHour, dailyLimit: f.dailyLimit, weeklyLimit: f.weeklyLimit,
+                            seasonStart: f.seasonStart || '', seasonEnd: f.seasonEnd || '', notice: (f.notice || '').trim(),
+                            courts: { court1: { active: !!f.courts.court1 }, court2: { active: !!f.courts.court2 } }
+                        });
+                        triggerToast('Shranjeno', 'Nastavitve so posodobljene.', 'success');
+                    } catch (e) { console.error(e); triggerToast('Napaka', 'Shranjevanje ni uspelo. Preverite Firestore pravila.', 'error'); }
+                }
+
+                const closureForm = ref({ courtId: 'all', date: getTodayString(), dateTo: '', fromHour: 6, toHour: 22, note: '' });
+                const sortedClosures = computed(() => [...closures.value].sort((a, b) => a.date.localeCompare(b.date)));
+                async function addClosure() {
+                    const f = closureForm.value;
+                    if (!f.date || !Number.isInteger(f.fromHour) || !Number.isInteger(f.toHour) || f.fromHour >= f.toHour || (f.dateTo && f.dateTo < f.date)) {
+                        triggerToast('Napačni podatki', 'Preverite datum in ure zaprtja.', 'error'); return;
+                    }
+                    try {
+                        await setDoc(doc(collection(db, 'closures')), {
+                            courtId: f.courtId, date: f.date, dateTo: f.dateTo || '', fromHour: f.fromHour, toHour: f.toHour,
+                            note: (f.note || '').trim(), createdAt: new Date().toISOString()
+                        });
+                        triggerToast('Zaprtje dodano', 'Termini so sedaj prikazani kot Zaprt.', 'success');
+                    } catch (e) { console.error(e); triggerToast('Napaka', 'Dodajanje ni uspelo.', 'error'); }
+                }
+                async function removeClosure(id) {
+                    try { await deleteDoc(doc(db, 'closures', id)); triggerToast('Zaprtje odstranjeno', '', 'info'); }
+                    catch (e) { triggerToast('Napaka', 'Brisanje ni uspelo.', 'error'); }
+                }
+
+                const manualForm = ref({ courtId: 'court1', date: getTodayString(), hour: 18, name: '' });
+                async function addManualBooking() {
+                    const f = manualForm.value;
+                    if (!f.date || !Number.isInteger(f.hour) || f.hour < 0 || f.hour > 23) { triggerToast('Napačni podatki', 'Preverite datum in uro.', 'error'); return; }
+                    const id = `${f.courtId}_${f.date}_${f.hour}`;
+                    if (bookingMap.value.has(`${f.courtId}_${f.date}_${f.hour}`)) { triggerToast('Termin je zaseden', 'Najprej izbrišite obstoječo rezervacijo.', 'error'); return; }
+                    try {
+                        await setDoc(doc(db, 'bookings', id), {
+                            courtId: f.courtId, date: f.date, startHour: f.hour, timeSlot: `${pad2(f.hour)}:00 - ${pad2(f.hour + 1)}:00`,
+                            userId: currentUser.value.uid, userName: (f.name || '').trim() || 'Skrbnik', createdAt: new Date().toISOString()
+                        });
+                        triggerToast('Rezervacija dodana', id, 'success');
+                    } catch (e) { console.error(e); triggerToast('Napaka', 'Dodajanje ni uspelo.', 'error'); }
+                }
+
+                const adminDate = ref('');
+                const adminSearch = ref('');
+                const adminOnlyFuture = ref(true);
+                const adminBookings = computed(() => {
+                    const q = adminSearch.value.trim().toLowerCase(), today = getNowInfo().todayStr;
+                    return bookings.value
+                        .filter(b => (!adminDate.value || b.date === adminDate.value)
+                            && (!adminOnlyFuture.value || adminDate.value || b.date >= today)
+                            && (!q || (b.userName || '').toLowerCase().includes(q)))
+                        .sort((a, b) => (a.date + pad2(a.startHour)).localeCompare(b.date + pad2(b.startHour)))
+                        .slice(0, 300);
+                });
+
                 // Date formatting in Slovenian
                 const formattedSelectedDate = computed(() => {
                     if (!selectedDate.value) return '';
@@ -1172,7 +1473,7 @@
                     const slots = [];
                     const { todayStr, hour: currentHour } = getNowInfo();
 
-                    for (let hour = 6; hour < 22; hour++) {
+                    for (let hour = settings.value.openHour; hour < settings.value.closeHour; hour++) {
                         const slotLabel = `${pad2(hour)}:00 - ${pad2(hour + 1)}:00`;
 
                         const booking = bookingMap.value.get(`${courtId}_${selectedDate.value}_${hour}`);
@@ -1186,7 +1487,10 @@
                             isPast = true;
                         }
 
+                        const ci = closedInfo(courtId, selectedDate.value, hour);
                         slots.push({
+                            isClosed: !isOccupied && !!ci,
+                            closedNote: ci ? ci.note : '',
                             startHour: hour,
                             label: slotLabel,
                             isOccupied,
@@ -1226,18 +1530,19 @@
                         const courts = COURTS.map(c => {
                             let free = 0;
                             const cells = [];
-                            for (let hour = 6; hour < 22; hour++) {
+                            for (let hour = settings.value.openHour; hour < settings.value.closeHour; hour++) {
                                 const b = bookingMap.value.get(`${c.id}_${date}_${hour}`);
                                 const isPast = date < todayStr || (date === todayStr && hour <= curHour);
                                 let status;
                                 if (b && uid && b.userId === uid) status = 'mine';
                                 else if (b) status = 'busy';
+                                else if (closedInfo(c.id, date, hour)) status = 'closed';
                                 else if (isPast) status = 'past';
                                 else { status = 'free'; free++; }
 
                                 const statusText = status === 'mine' ? 'Moja rezervacija'
                                     : status === 'busy' ? 'Zasedeno' + (b && b.userName ? ` (${b.userName})` : '')
-                                    : status === 'past' ? 'Potekel' : 'Prosto';
+                                    : status === 'past' ? 'Potekel' : status === 'closed' ? 'Zaprt' : 'Prosto';
                                 cells.push({ hour, status, title: `${pad2(hour)}:00 – ${pad2(hour + 1)}:00 · ${statusText}` });
                             }
                             return { id: c.id, n: c.n, name: c.name, cells, free };
@@ -1279,7 +1584,7 @@
                     if (slot.isOccupied) {
                         return 'bg-slate-100/80 border border-slate-200 text-slate-500';
                     }
-                    if (slot.isPast) {
+                    if (slot.isClosed || slot.isPast) {
                         return 'bg-slate-50 border border-slate-100 opacity-60';
                     }
                     return 'bg-emerald-50/60 hover:bg-emerald-100/80 border border-emerald-200/80 text-slate-800 cursor-pointer';
@@ -1299,6 +1604,35 @@
                     if (!v) selectedDate.value = getTodayString();
                 });
 
+                // Ročni vpis datuma (tipkovnica na telefonu)
+                const fmtDateText = (iso) => { const [y, m, d] = iso.split('-'); return `${d}.${m}.${y}`; };
+                const dateText = ref(fmtDateText(selectedDate.value));
+                watch(selectedDate, (v) => { if (v) dateText.value = fmtDateText(v); });
+
+                function parseDateText(t) {
+                    t = (t || '').trim();
+                    let m = t.match(/^(\d{1,2})\D+(\d{1,2})\D+(\d{4})$/) || t.match(/^(\d{2})(\d{2})(\d{4})$/);
+                    if (!m) return null;
+                    const d = +m[1], mo = +m[2], y = +m[3];
+                    const dt = new Date(y, mo - 1, d);
+                    if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
+                    return formatDate(dt);
+                }
+                function onDateTextInput() {
+                    const iso = parseDateText(dateText.value);
+                    if (iso && iso !== selectedDate.value) selectedDate.value = iso;
+                }
+                function commitDateText() {
+                    const iso = parseDateText(dateText.value);
+                    if (iso) selectedDate.value = iso;
+                    dateText.value = fmtDateText(selectedDate.value);
+                }
+                function openDatePicker() {
+                    const el = document.getElementById('nativeDate');
+                    if (!el) return;
+                    try { el.showPicker ? el.showPicker() : el.click(); } catch (e) { el.click(); }
+                }
+
                 const authReady = ref(false);
                 const bookingsLoaded = ref(false);
                 let unsubBookings = null;
@@ -1308,6 +1642,7 @@
                     unsubBookings = null;
                     bookings.value = [];
                     bookingsLoaded.value = false;
+                    stopExtraListeners();
                 }
 
                 // Sinhronizacija v realnem času
@@ -1322,6 +1657,7 @@
                         console.error("Firestore napaka:", err);
                         triggerToast('Napaka pri branju', 'Rezervacij ni mogoče naložiti. Preverite Firestore pravila.', 'error');
                     });
+                    startExtraListeners();
                 }
 
                 onMounted(() => {
@@ -1338,6 +1674,7 @@
                                 openGuestModal();
                             }
                             startBookingsListener();
+                            sendPresence();
                         } else {
                             stopBookingsListener();
                         }
@@ -1350,13 +1687,13 @@
                         return;
                     }
 
-                    if (todayUsage.value >= DAILY_LIMIT) {
-                        triggerToast('Dnevna kvota presežena', `Dosegli ste dnevno omejitev ${DAILY_LIMIT} ur za ta dan!`, 'error');
+                    if (todayUsage.value >= DAILY_LIMIT.value) {
+                        triggerToast('Dnevna kvota presežena', `Dosegli ste dnevno omejitev ${DAILY_LIMIT.value} ur za ta dan!`, 'error');
                         return;
                     }
 
-                    if (weekUsage.value >= WEEKLY_LIMIT) {
-                        triggerToast('Tedenska kvota presežena', `Dosegli ste tedensko omejitev ${WEEKLY_LIMIT} ur v tekočem tednu!`, 'error');
+                    if (weekUsage.value >= WEEKLY_LIMIT.value) {
+                        triggerToast('Tedenska kvota presežena', `Dosegli ste tedensko omejitev ${WEEKLY_LIMIT.value} ur v tekočem tednu!`, 'error');
                         return;
                     }
 
@@ -1376,7 +1713,12 @@
                         showBookingModal.value = false;
                         return;
                     }
-                    if (todayUsage.value >= DAILY_LIMIT || weekUsage.value >= WEEKLY_LIMIT) {
+                    if (closedInfo(targetCourt.value, selectedDate.value, targetSlot.value.startHour)) {
+                        triggerToast('Termin je zaprt', 'Ta termin trenutno ni na voljo.', 'error');
+                        showBookingModal.value = false;
+                        return;
+                    }
+                    if (todayUsage.value >= DAILY_LIMIT.value || weekUsage.value >= WEEKLY_LIMIT.value) {
                         triggerToast('Kvota presežena', 'Za ta termin nimate več proste kvote.', 'error');
                         showBookingModal.value = false;
                         return;
@@ -1506,6 +1848,7 @@
                 }
 
                 async function logout() {
+                    try { if (currentUser.value) await setDoc(doc(db, 'presence', currentUser.value.uid), { online: false, lastSeen: serverTimestamp() }, { merge: true }); } catch (e) {}
                     await signOut(auth);
                     triggerToast('Odjavljeni', 'Uspešno ste se odjavili.', 'info');
                 }
@@ -1526,6 +1869,11 @@
                 }
 
                 return {
+                    isAdmin, courts, pad, courtName, settings, closures, statusBanner, courtIsActive,
+                    openHoursText, openHoursRange, settingsForm, saveSettings, closureForm, sortedClosures, addClosure, removeClosure,
+                    manualForm, addManualBooking, adminDate, adminSearch, adminOnlyFuture, adminBookings,
+                    presenceList, onlineCount, fmtTs, removePresence,
+                    dateText, onDateTextInput, commitDateText, openDatePicker,
                     activeTab,
                     selectedDate,
                     courtFilter,
