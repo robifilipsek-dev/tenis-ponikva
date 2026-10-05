@@ -883,7 +883,7 @@
                                         <strong class="text-slate-900 truncate">{{ u.name || 'Brez imena' }}</strong>
                                         <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{{ u.isAnonymous ? 'Gost' : 'Google' }}</span>
                                     </div>
-                                    <div class="text-slate-500 mt-1 truncate">{{ u.email || 'Anonimni uporabnik' }}</div>
+                                    <div class="text-slate-500 mt-1 truncate font-mono text-[11px]">{{ u.email ? u.email : (u.isAnonymous ? 'Anonimni uporabnik (Gost)' : 'E-pošta ni na voljo') }}</div>
                                     <div class="text-slate-400 mt-1">Prvi obisk: {{ fmtTs(u.firstSeenMs) }} · Zadnji: {{ fmtTs(u.lastSeenMs) }}</div>
                                 </div>
                                 <div class="text-right flex-shrink-0">
@@ -1831,6 +1831,18 @@
                             if (user.isAnonymous && !userName.value) {
                                 openGuestModal();
                             }
+                            
+                            // Shranimo/posodobimo e-pošto in podatke v userStats
+                            if (!user.isAnonymous && user.email) {
+                                setDoc(doc(db, 'userStats', user.uid), {
+                                    uid: user.uid,
+                                    name: user.displayName || userName.value || '',
+                                    email: user.email,
+                                    isAnonymous: false,
+                                    lastSeenAt: serverTimestamp()
+                                }, { merge: true }).catch(e => console.warn('Napaka pri osveževanju userStats:', e));
+                            }
+
                             startBookingsListener();
                             sendPresence();
                             registerUserSession(user);
