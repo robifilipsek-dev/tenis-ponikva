@@ -868,38 +868,45 @@
                         <div class="p-3 rounded-xl bg-amber-50 border border-amber-200"><div class="text-amber-700">Obiski</div><strong class="text-lg text-amber-800">{{ totalVisits }}</strong></div>
                     </div>
 
-                    <div class="flex flex-wrap gap-2">
-                        <input type="text" v-model="userSearch" placeholder="Išči uporabnika ..." class="flex-1 min-w-[12rem] px-3 py-2 rounded-lg border border-slate-300 text-xs">
-                        <select v-model="userTypeFilter" class="px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" v-model="userSearch" placeholder="Išči uporabnika ..." class="w-full sm:flex-1 min-w-0 px-3 py-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-court-accent focus:outline-none">
+                        <select v-model="userTypeFilter" class="w-full sm:w-auto px-3 py-2.5 rounded-lg border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-court-accent focus:outline-none">
                             <option value="all">Vsi</option><option value="google">Google</option><option value="guest">Gostje</option><option value="online">Aktivni</option>
                         </select>
                     </div>
 
-                    <div class="max-h-[28rem] overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl">
-                        <div v-for="u in filteredUsers" :key="u.id" class="px-3 py-3 text-xs hover:bg-slate-50">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-2">
+                    <!-- Odziven seznam uporabnikov: na telefonu je vsak uporabnik samostojen kartonček,
+                         zato se gumbi in e-pošta ne stiskajo v eno vrstico. -->
+                    <div class="max-h-[34rem] overflow-y-auto border border-slate-200 rounded-xl bg-slate-50/50 p-2 sm:p-0 sm:bg-white sm:divide-y sm:divide-slate-100">
+                        <div v-for="u in filteredUsers" :key="u.id" class="p-3 sm:px-3 sm:py-3 text-xs bg-white rounded-xl sm:rounded-none border border-slate-200 sm:border-0 mb-2 sm:mb-0 shadow-sm sm:shadow-none hover:bg-slate-50/70">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2 min-w-0">
                                         <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :class="u.online ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'"></span>
                                         <strong class="text-slate-900 truncate">{{ u.name || 'Brez imena' }}</strong>
-                                        <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{{ u.isAnonymous ? 'Gost' : 'Google' }}</span>
+                                        <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 flex-shrink-0">{{ u.isAnonymous ? 'Gost' : 'Google' }}</span>
                                     </div>
-                                    <div class="text-slate-500 mt-1 truncate font-mono text-[11px]">
-    {{ u.email ? u.email : (u.isAnonymous ? 'Gost (brez e-pošte)' : 'E-pošta ni zabeležena') }}
-</div>
-                                    <div class="text-slate-400 mt-1">Prvi obisk: {{ fmtTs(u.firstSeenMs) }} · Zadnji: {{ fmtTs(u.lastSeenMs) }}</div>
+                                    <div class="text-slate-500 mt-1 break-all font-mono text-[11px] leading-4">
+                                        {{ u.email ? u.email : (u.isAnonymous ? 'Gost (brez e-pošte)' : 'E-pošta ni zabeležena') }}
+                                    </div>
+                                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-x-3 gap-y-1 text-[10px] sm:text-[11px] text-slate-400">
+                                        <span>Prvi obisk: {{ fmtTs(u.firstSeenMs) }}</span>
+                                        <span>Zadnji: {{ fmtTs(u.lastSeenMs) }}</span>
+                                        <span class="font-semibold text-slate-600">{{ u.visitCount || 0 }} obiskov</span>
+                                    </div>
                                 </div>
-                                <div class="text-right flex-shrink-0">
-                                    <div class="font-semibold text-slate-700">{{ u.visitCount || 0 }} obiskov</div>
-                                    <div class="mt-1 flex flex-wrap justify-end gap-1">
-                                        <button @click="showUserHistory(u)" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">Zgodovina</button>
-                                        <button @click="resetUserTracking(u)" class="px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold">Ponastavi</button>
-                                        <button @click="deleteUserTracking(u)" class="px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 font-semibold">Izbriši evidence</button>
+                                <div class="w-full lg:w-auto flex flex-col sm:flex-row lg:flex-col gap-1.5">
+                                    <button @click="showUserHistory(u)" class="flex-1 lg:flex-none px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold whitespace-nowrap">
+                                        <i class="fa-solid fa-clock-rotate-left mr-1"></i>Zgodovina
+                                    </button>
+                                    <div class="flex gap-1.5">
+                                        <button @click="resetUserTracking(u)" class="flex-1 px-2.5 py-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold whitespace-nowrap">Ponastavi</button>
+                                        <button @click="deleteUserTracking(u)" class="flex-1 px-2.5 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 font-semibold whitespace-nowrap">Izbriši evidence</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div v-if="filteredUsers.length === 0" class="p-4 text-slate-500 text-xs">Ni uporabnikov za izbrane filtre.</div>
+                        <div v-if="filteredUsers.length === 0" class="p-4 text-slate-500 text-xs bg-white">Ni uporabnikov za izbrane filtre.</div>
                     </div>
 
                     <div v-if="selectedUserHistory" class="rounded-xl border border-blue-200 bg-blue-50/50 p-4 space-y-3">
@@ -907,10 +914,22 @@
                             <div><strong class="text-sm text-slate-900">{{ selectedUserHistory.name || 'Brez imena' }}</strong><div class="text-[11px] text-slate-500">Zgodovina sej</div></div>
                             <button @click="selectedUserHistory = null" class="text-slate-500 hover:text-red-600"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-                        <div class="max-h-48 overflow-y-auto space-y-1">
-                            <div v-for="s in selectedUserSessions" :key="s.id" class="flex justify-between gap-2 p-2 rounded-lg bg-white border border-slate-200 text-[11px]">
-                                <span>{{ fmtTs(s.startedAtMs || (s.startedAt && s.startedAt.toMillis ? s.startedAt.toMillis() : 0)) }}</span>
-                                <span class="text-slate-500">Zadnja aktivnost {{ fmtTs(s.lastSeenMs || (s.lastSeenAt && s.lastSeenAt.toMillis ? s.lastSeenAt.toMillis() : 0)) }}</span>
+                        <div class="max-h-72 overflow-y-auto space-y-2">
+                            <div v-for="s in selectedUserSessions" :key="s.id" class="p-3 rounded-xl bg-white border border-slate-200 text-[11px]">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                                    <span class="font-semibold text-slate-700">Seja: {{ fmtTs(s.startedAtMs || (s.startedAt && s.startedAt.toMillis ? s.startedAt.toMillis() : 0)) }}</span>
+                                    <span class="text-slate-500">Zadnja aktivnost: {{ fmtTs(s.lastSeenMs || (s.lastSeenAt && s.lastSeenAt.toMillis ? s.lastSeenAt.toMillis() : 0)) }}</span>
+                                </div>
+                                <div v-if="s.activities && s.activities.length" class="mt-2 space-y-1">
+                                    <div v-for="(a, ai) in s.activities" :key="ai" class="flex items-start gap-2 rounded-lg bg-slate-50 border border-slate-100 px-2.5 py-2">
+                                        <i class="fa-solid fa-bolt text-court-green mt-0.5 flex-shrink-0"></i>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="text-slate-700 font-medium break-words">{{ a.text }}</div>
+                                            <div v-if="a.atMs" class="text-slate-400 mt-0.5">{{ fmtTs(a.atMs) }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Če v seji ni bilo konkretne aktivnosti, namerno ne izpišemo nobene opombe. -->
                             </div>
                             <div v-if="selectedUserSessions.length === 0" class="text-slate-500">Za tega uporabnika še ni zgodovinskih sej.</div>
                         </div>
@@ -1151,7 +1170,8 @@
             deleteDoc,
             runTransaction,
             serverTimestamp,
-            increment
+            increment,
+            arrayUnion
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ===== Omejitve =====
@@ -2032,6 +2052,21 @@
                 }
 
                 let sessionUid = null;
+                // V sejo zapisujemo samo konkretne aktivnosti uporabnika. Če jih ni, ostane polje prazno
+                // in se v skrbniški zgodovini ne izpiše nobena opomba.
+                async function logSessionActivity(text) {
+                    const uid = currentUser.value?.uid;
+                    const sessionId = ss.get('ponikva_session_id');
+                    if (!uid || !sessionId || !text || await isTrackingSuppressed(currentUser.value)) return;
+                    try {
+                        await setDoc(doc(db, 'userSessions', sessionId), {
+                            activities: arrayUnion({ text: String(text).slice(0, 240), atMs: Date.now() })
+                        }, { merge: true });
+                    } catch (e) {
+                        console.warn('Beleženje aktivnosti seje ni uspelo:', e);
+                    }
+                }
+
                 async function registerUserSession(user) {
                     if (!user || sessionUid === user.uid) return;
                     sessionUid = user.uid; // takoj zaklenemo, da vzporedna klica ne ustvarita dveh sej
@@ -2193,6 +2228,7 @@
                             });
                         });
 
+                        await logSessionActivity(`Rezerviral ${courtId === 'court1' ? 'Igrišče 1' : 'Igrišče 2'} za ${bookingDate} ob ${slot.label}.`);
                         triggerToast('Uspešna rezervacija!', `Rezervirali ste ${courtId === 'court1' ? 'Igrišče 1' : 'Igrišče 2'} ob ${slot.label}`, 'success');
                         showBookingModal.value = false;
                     } catch (e) {
@@ -2228,6 +2264,8 @@
                             transaction.delete(docRef);
                         });
 
+                        const cancelled = targetBookingToCancel.value;
+                        await logSessionActivity(`${isAdmin.value && cancelled?.userId !== currentUser.value?.uid ? 'Skrbniško izbrisal' : 'Preklical'} rezervacijo ${cancelled?.courtId === 'court1' ? 'Igrišče 1' : 'Igrišče 2'} za ${cancelled?.date || ''} ob ${cancelled?.timeSlot || ''}.`);
                         triggerToast('Rezervacija preklicana', 'Termin je sedaj sproščen za ostale igralce.', 'info');
                         showCancelModal.value = false;
                         targetBookingToCancel.value = null;
@@ -2366,7 +2404,7 @@
                     showProfileModal.value = true;
                 }
 
-                function saveProfile() {
+                async function saveProfile() {
                     const isGuest = !!(currentUser.value && currentUser.value.isAnonymous);
                     let name = (profileName.value || '').trim().replace(/\s+/g, ' ');
                     if (isGuest && !hasValidGuestName(name)) {
@@ -2377,9 +2415,11 @@
                         name = currentUser.value.displayName || (currentUser.value.email ? currentUser.value.email.split('@')[0] : '');
                     }
                     if (name) {
+                        const changed = name !== (userName.value || '').trim();
                         userName.value = name;
                         ls.set('ponikva_user_name', name);
                         if (isGuest) saveGuestRecord(currentUser.value, name);
+                        if (changed) await logSessionActivity('Spremenil prikazano ime v profilu.');
                         triggerToast('Spremembe shranjene', 'Prikazano ime je posodobljeno.', 'success');
                     }
                     showProfileModal.value = false;
