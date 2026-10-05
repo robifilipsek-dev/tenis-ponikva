@@ -883,7 +883,9 @@
                                         <strong class="text-slate-900 truncate">{{ u.name || 'Brez imena' }}</strong>
                                         <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{{ u.isAnonymous ? 'Gost' : 'Google' }}</span>
                                     </div>
-                                    <div class="text-slate-500 mt-1 truncate font-mono text-[11px]">{{ u.email ? u.email : (u.isAnonymous ? 'Anonimni uporabnik (Gost)' : 'E-pošta ni na voljo') }}</div>
+                                    <div class="text-slate-500 mt-1 truncate font-mono text-[11px]">
+    {{ u.email ? u.email : (u.isAnonymous ? 'Gost (brez e-pošte)' : 'E-pošta ni zabeležena') }}
+</div>
                                     <div class="text-slate-400 mt-1">Prvi obisk: {{ fmtTs(u.firstSeenMs) }} · Zadnji: {{ fmtTs(u.lastSeenMs) }}</div>
                                 </div>
                                 <div class="text-right flex-shrink-0">
@@ -1437,7 +1439,7 @@
                     userStats.value.forEach(u => merge({ id: u.id, ...u }));
                     guests.value.forEach(u => merge({ id: u.id, ...u, isAnonymous: true, name: u.name }));
                     presenceList.value.forEach(u => merge(u));
-                    bookings.value.forEach(b => merge({ id: b.userId, name: b.userName, isAnonymous: false }));
+                    bookings.value.forEach(b => merge({ id: b.userId, name: b.userName }));
                     return Array.from(map.values()).map(u => {
                         const p = presenceList.value.find(x => x.id === u.id);
                         const st = userStats.value.find(x => x.id === u.id);
