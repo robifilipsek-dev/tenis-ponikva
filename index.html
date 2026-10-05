@@ -1411,10 +1411,30 @@
                     }
                 }
 
+                async function isTrackingSuppressed(user) {
+                    if (!user) return false;
+                    const markerRef = doc(db, 'userTrackingResets', user.uid);
+                    try {
+                        const marker = await getDoc(markerRef);
+                        if (!marker.exists()) return false;
+                        const deletedAt = marker.data().deletedAt?.toMillis?.() || 0;
+                        const signedInAt = Date.parse(user.metadata?.lastSignInTime || '');
+                        if (deletedAt && Number.isFinite(signedInAt) && signedInAt > deletedAt) {
+                            await deleteDoc(markerRef);
+                            return false;
+                        }
+                        return true;
+                    } catch (e) {
+                        console.warn('Stanja beleženja ni bilo mogoče preveriti:', e);
+                        return true;
+                    }
+                }
+
                 // Prisotnost (heartbeat vsako minuto)
                 async function sendPresence() {
                     const u = currentUser.value;
                     if (!u) return;
+                    if (await isTrackingSuppressed(u)) return;
                     try {
                         await setDoc(doc(db, 'presence', u.uid), {
                             uid: u.uid, name: userName.value || u.displayName || '', email: u.email || '',
@@ -1455,7 +1475,6 @@
                     userStats.value.forEach(u => merge({ id: u.id, ...u }));
                     guests.value.forEach(u => merge({ id: u.id, ...u, isAnonymous: true, name: u.name }));
                     presenceList.value.forEach(u => merge(u));
-                    bookings.value.forEach(b => merge({ id: b.userId, name: b.userName }));
                     return Array.from(map.values()).map(u => {
                         const p = presenceList.value.find(x => x.id === u.id);
                         const st = userStats.value.find(x => x.id === u.id);
@@ -1530,11 +1549,15 @@
                 }
 
                 async function deleteUserTracking(user) {
-                    if (!isAdmin.value || !user?.id || !window.confirm(`Izbrišem statistiko, gostujoči profil, prisotnost in zgodovino sej za ${userRecordLabel(user)}? Če je uporabnik še aktiven, se bodo nove evidence začele ustvarjati znova. Rezervacije in prijavni račun ostanejo.`)) return;
+                    if (!isAdmin.value || !user?.id || !window.confirm(`Odstranim ${userRecordLabel(user)} s seznama in izbrišem njegove evidence? Rezervacije in prijavni račun ostanejo. Uporabnik se bo znova pojavil po naslednji prijavi.`)) return;
                     try {
+                        await setDoc(doc(db, 'userTrackingResets', user.id), {
+                            uid: user.id,
+                            deletedAt: serverTimestamp()
+                        });
                         await clearUserTracking(user.id);
                         if (selectedUserHistory.value?.id === user.id) selectedUserHistory.value = null;
-                        triggerToast('Evidence izbrisane', 'Izbrisani so uporabniška statistika, profil gosta, prisotnost in zgodovina sej.', 'success');
+                        triggerToast('Uporabnik odstranjen', 'Evidence so izbrisane. Uporabnik se bo v seznam vrnil po naslednji prijavi; rezervacije ostanejo.', 'success');
                     } catch (e) {
                         console.error('Brisanje uporabniških evidenc ni uspelo:', e);
                         triggerToast('Napaka', `Brisanje ni uspelo (${e.code || 'neznana napaka'}). ${e.message || 'Preverite Firestore pravila.'}`, 'error');
@@ -1875,6 +1898,7 @@
                 let sessionUid = null;
                 async function registerUserSession(user) {
                     if (!user || sessionUid === user.uid) return;
+                    if (await isTrackingSuppressed(user)) return;
                     const sessionKey = 'ponikva_session_id';
                     const sessionUserKey = 'ponikva_session_uid';
                     let sessionId = sessionStorage.getItem(sessionKey);
@@ -1923,7 +1947,7 @@
                 onMounted(() => {
                     getRedirectResult(auth).catch((e) => console.error(e));
 
-                    onAuthStateChanged(auth, (user) => {
+                    onAuthStateChanged(auth, async (user) => {
                         currentUser.value = user;
                         authReady.value = true;
                         if (user) {
@@ -1934,20 +1958,23 @@
                                 openGuestModal();
                             }
                             
-                            // Shranimo/posodobimo e-pošto in podatke v userStats
-                            if (!user.isAnonymous && user.email) {
-                                setDoc(doc(db, 'userStats', user.uid), {
-                                    uid: user.uid,
-                                    name: user.displayName || userName.value || '',
-                                    email: user.email,
-                                    isAnonymous: false,
-                                    lastSeenAt: serverTimestamp()
-                                }, { merge: true }).catch(e => console.warn('Napaka pri osveževanju userStats:', e));
-                            }
-
                             startBookingsListener();
-                            sendPresence();
-                            registerUserSession(user);
+                            if (!(await isTrackingSuppressed(user))) {
+                                // Shranimo/posodobimo e-pošto in podatke v userStats
+                                if (!user.isAnonymous && user.email) {
+                                    setDoc(doc(db, 'userStats', user.uid), {
+                                        uid: user.uid,
+                                        name: user.displayName || userName.value || '',
+                                        email: user.email,
+                                        isAnonymous: false,
+                                        lastSeenAt: serverTimestamp()
+                                    }, { merge: true }).catch(e => console.warn('Napaka pri osveževanju userStats:', e));
+                                }
+                                sendPresence();
+                                registerUserSession(user);
+                            } else {
+                                sessionUid = null;
+                            }
                         } else {
                             stopBookingsListener();
                         }
@@ -2098,6 +2125,7 @@
 
                 // Zapis gosta v Firestore (zbirka "guests"), da ga vidiš v Firebase konzoli
                 async function saveGuestRecord(user, name) {
+                    if (await isTrackingSuppressed(user)) return;
                     try {
                         const parts = (name || '').trim().split(/\s+/).filter(Boolean);
                         await setDoc(doc(db, 'guests', user.uid), {
@@ -2132,14 +2160,17 @@
                         }
 
                         if (user) {
-                            await saveGuestRecord(user, name);
-                            await setDoc(doc(db, 'userStats', user.uid), { 
-                                name, 
-                                firstName: parts[0], 
-                                lastName: parts.slice(1).join(' '), 
-                                isAnonymous: true, 
-                                lastSeenAt: serverTimestamp() 
-                            }, { merge: true });
+                            if (!(await isTrackingSuppressed(user))) {
+                                await saveGuestRecord(user, name);
+                                await setDoc(doc(db, 'userStats', user.uid), {
+                                    uid: user.uid,
+                                    name,
+                                    firstName: parts[0],
+                                    lastName: parts.slice(1).join(' '),
+                                    isAnonymous: true,
+                                    lastSeenAt: serverTimestamp()
+                                }, { merge: true });
+                            }
 
                             showGuestModal.value = false;
                             registerUserSession(user);
