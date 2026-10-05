@@ -902,7 +902,8 @@
                         </div>
                         <div class="max-h-48 overflow-y-auto space-y-1">
                             <div v-for="s in selectedUserSessions" :key="s.id" class="flex justify-between gap-2 p-2 rounded-lg bg-white border border-slate-200 text-[11px]">
-                                <span>{{ fmtTs(s.startedAtMs) }}</span><span class="text-slate-500">Zadnja aktivnost {{ fmtTs(s.lastSeenMs) }}</span>
+                                <span>{{ fmtTs(s.startedAtMs || (s.startedAt && s.startedAt.toMillis ? s.startedAt.toMillis() : 0)) }}</span>
+                                <span class="text-slate-500">Zadnja aktivnost {{ fmtTs(s.lastSeenMs || (s.lastSeenAt && s.lastSeenAt.toMillis ? s.lastSeenAt.toMillis() : 0)) }}</span>
                             </div>
                             <div v-if="selectedUserSessions.length === 0" class="text-slate-500">Za tega uporabnika še ni zgodovinskih sej.</div>
                         </div>
@@ -1804,7 +1805,16 @@
                             ...(currentVisitCount ? { visitCount: currentVisitCount + 1 } : { visitCount: 1, firstSeenAt: serverTimestamp() })
                         }, { merge: true });
                         const sessionRef = doc(db, 'userSessions', sessionId);
-                        await setDoc(sessionRef, { uid: user.uid, name: userName.value || user.displayName || '', email: user.email || '', isAnonymous: !!user.isAnonymous, startedAt: serverTimestamp(), lastSeenAt: serverTimestamp() }, { merge: true });
+                        await setDoc(sessionRef, { 
+                            uid: user.uid, 
+                            name: userName.value || user.displayName || '', 
+                            email: user.email || '', 
+                            isAnonymous: !!user.isAnonymous, 
+                            startedAtMs: nowMs,
+                            lastSeenMs: nowMs,
+                            startedAt: serverTimestamp(), 
+                            lastSeenAt: serverTimestamp() 
+                        }, { merge: true });
                     } catch (e) { console.warn('Zapis uporabniške zgodovine ni uspel:', e); }
                 }
 
