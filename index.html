@@ -288,13 +288,13 @@
                         <div class="bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
                             <span class="text-slate-400 font-medium">Dnevna kvota</span>
                             <span class="text-sm font-bold mt-0.5" :class="todayUsage >= DAILY_LIMIT ? 'text-amber-400' : 'text-emerald-300'">
-                                {{ todayUsage }} / {{ DAILY_LIMIT }} uri
+                                {{ todayUsage }} / {{ DAILY_LIMIT }} {{ hoursLabel(DAILY_LIMIT) }}
                             </span>
                         </div>
                         <div class="col-span-2 sm:col-span-1 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
                             <span class="text-slate-400 font-medium">Tedenska kvota</span>
                             <span class="text-sm font-bold mt-0.5" :class="weekUsage >= WEEKLY_LIMIT ? 'text-amber-400' : 'text-emerald-300'">
-                                {{ weekUsage }} / {{ WEEKLY_LIMIT }} ure
+                                {{ weekUsage }} / {{ WEEKLY_LIMIT }} {{ hoursLabel(WEEKLY_LIMIT) }}
                             </span>
                         </div>
                     </div>
@@ -450,13 +450,13 @@
                 <div v-if="currentUser && todayUsage >= DAILY_LIMIT" class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-center gap-3">
                     <i class="fa-solid fa-triangle-exclamation text-amber-600 text-lg flex-shrink-0"></i>
                     <div>
-                        <strong>Dnevna omejitev dosežena!</strong> Za izbrani dan ste že rezervirali {{ todayUsage }}/{{ DAILY_LIMIT }} uri. Za več terminov izberite drug datum ali sprostite obstoječo rezervacijo.
+                        <strong>Dnevna omejitev dosežena!</strong> Za izbrani dan ste že rezervirali {{ todayUsage }}/{{ DAILY_LIMIT }} {{ hoursLabel(DAILY_LIMIT) }}. Za več terminov izberite drug datum ali sprostite obstoječo rezervacijo.
                     </div>
                 </div>
                 <div v-if="currentUser && weekUsage >= WEEKLY_LIMIT" class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-center gap-3">
                     <i class="fa-solid fa-triangle-exclamation text-amber-600 text-lg flex-shrink-0"></i>
                     <div>
-                        <strong>Tedenska omejitev dosežena!</strong> V tem tednu ste že rezervirali {{ weekUsage }}/{{ WEEKLY_LIMIT }} ure.
+                        <strong>Tedenska omejitev dosežena!</strong> V tem tednu ste že rezervirali {{ weekUsage }}/{{ WEEKLY_LIMIT }} {{ hoursLabel(WEEKLY_LIMIT) }}.
                     </div>
                 </div>
 
@@ -719,18 +719,18 @@
                         <ul class="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i>
-                                <span><strong>Dnevna kvota:</strong> Posamezen uporabnik lahko rezervira največ <strong>2 uri na dan</strong>.</span>
+                                <span><strong>Dnevna kvota:</strong> Posamezen uporabnik lahko rezervira največ <strong>{{ DAILY_LIMIT }} {{ hoursLabel(DAILY_LIMIT) }} na dan</strong>.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i>
-                                <span><strong>Tedenska kvota:</strong> Posamezen uporabnik lahko rezervira največ <strong>4 ure v tekočem tednu</strong>.</span>
+                                <span><strong>Tedenska kvota:</strong> Posamezen uporabnik lahko rezervira največ <strong>{{ WEEKLY_LIMIT }} {{ hoursLabel(WEEKLY_LIMIT) }} v tekočem tednu</strong>.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i>
                                 <span><strong>Preklic termina:</strong> Če ne boste mogli igrati, prosimo, da rezervacijo prekličete vsaj 1 uro prej, da se termin sprosti za ostale članice in člane.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
-                                <i class="fa-solid fa-shoes-boots text-clay-600 mt-0.5"></i>
+                                <i class="fa-solid fa-shoe-prints text-clay-600 mt-0.5"></i>
                                 <span><strong>Oprema:</strong> Na peščenih igriščih je obvezna uporaba ustreznih tenis copat z gladkim podplatom.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
@@ -852,11 +852,12 @@
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
                             <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-users text-court-green"></i> Uporabniki <span class="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">{{ onlineCount }} trenutno aktivnih</span></h2>
-                            <p class="text-[11px] text-slate-500 mt-1">Aktiven = aplikacija je bila uporabljena v zadnjih 3 minutah. Zgodovina obiskov se beleži od te posodobitve naprej.</p>
+                            <p class="text-[11px] text-slate-500 mt-1">Aktiven = aplikacija je bila uporabljena v zadnjih 3 minutah. Izbris odstrani uporabnika s seznama; ob naslednjem odprtju aplikacije se pojavi znova (gost vpiše ime in priimek ponovno).</p>
                         </div>
                         <div class="flex gap-2 text-[11px]">
                             <span class="px-2 py-1 rounded-lg bg-slate-100 text-slate-600">{{ userDirectory.length }} uporabnikov</span>
                             <span class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700">{{ usersToday }} danes</span>
+                            <button @click="deleteAllTracking" class="px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 font-semibold"><i class="fa-solid fa-trash-can"></i> Izbriši vse</button>
                         </div>
                     </div>
 
@@ -1063,11 +1064,11 @@
                         <div class="font-bold text-slate-800">Statistika kvot:</div>
                         <div class="flex justify-between">
                             <span class="text-slate-500">Izbrani dan:</span>
-                            <span class="font-bold text-court-green">{{ todayUsage }} / {{ DAILY_LIMIT }} uri</span>
+                            <span class="font-bold text-court-green">{{ todayUsage }} / {{ DAILY_LIMIT }} {{ hoursLabel(DAILY_LIMIT) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-slate-500">Izbrani teden:</span>
-                            <span class="font-bold text-court-green">{{ weekUsage }} / {{ WEEKLY_LIMIT }} ure</span>
+                            <span class="font-bold text-court-green">{{ weekUsage }} / {{ WEEKLY_LIMIT }} {{ hoursLabel(WEEKLY_LIMIT) }}</span>
                         </div>
                     </div>
                 </div>
@@ -1078,6 +1079,21 @@
                     </button>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- MODAL: POTRDITEV (skrbnik) -->
+        <div v-if="confirmDialog.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 text-center">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-xl" :class="confirmDialog.danger ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-700'">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3 class="font-display font-bold text-lg text-slate-900">{{ confirmDialog.title }}</h3>
+                <p class="text-xs text-slate-600 mt-2 leading-relaxed">{{ confirmDialog.text }}</p>
+                <div class="flex items-center gap-3 mt-6">
+                    <button @click="answerConfirm(false)" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition border border-slate-300">Prekliči</button>
+                    <button @click="answerConfirm(true)" class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow transition">{{ confirmDialog.okLabel }}</button>
+                </div>
             </div>
         </div>
 
@@ -1109,7 +1125,7 @@
 
     <!-- APPLICATION SCRIPTS (Vue 3 ESM + Firebase 11.6.1) -->
     <script type="module">
-        import { createApp, ref, computed, onMounted, watch, nextTick } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+        import { createApp, ref, computed, onMounted, watch, nextTick } from 'https://unpkg.com/vue@3.5.13/dist/vue.esm-browser.prod.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import {
             getAuth,
@@ -1134,7 +1150,8 @@
             setDoc,
             deleteDoc,
             runTransaction,
-            serverTimestamp
+            serverTimestamp,
+            increment
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ===== Omejitve =====
@@ -1199,6 +1216,24 @@
 
         const pad2 = (n) => String(n).padStart(2, '0');
 
+        // Varen dostop do shrambe brskalnika (v zasebnem načinu ali vgrajenih brskalnikih lahko vrže napako)
+        const safeStore = (store) => ({
+            get(key) { try { return window[store].getItem(key); } catch (e) { return null; } },
+            set(key, value) { try { window[store].setItem(key, value); } catch (e) { /* ni pomembno */ } },
+            remove(key) { try { window[store].removeItem(key); } catch (e) { /* ni pomembno */ } }
+        });
+        const ls = safeStore('localStorage');
+        const ss = safeStore('sessionStorage');
+
+        // Slovenska sklanjatev: 1 ura, 2 uri, 3-4 ure, 5+ ur
+        const hoursLabel = (n) => {
+            const m = Math.abs(Number(n) || 0) % 100;
+            if (m === 1) return 'ura';
+            if (m === 2) return 'uri';
+            if (m === 3 || m === 4) return 'ure';
+            return 'ur';
+        };
+
         const COURTS = [
             { id: 'court1', n: 1, name: 'Igrišče 1' },
             { id: 'court2', n: 2, name: 'Igrišče 2' }
@@ -1231,7 +1266,7 @@
 
                 // User Auth State
                 const currentUser = ref(null);
-                const userName = ref(localStorage.getItem('ponikva_user_name') || '');
+                const userName = ref(ls.get('ponikva_user_name') || '');
 
                 // Bookings loaded from Firestore
                 const bookings = ref([]);
@@ -1411,22 +1446,37 @@
                     }
                 }
 
+                // Ponastavitev uporabnika: skrbnik v userTrackingResets/{uid} zapiše čas brisanja.
+                // - Stran, ki je že odprta v trenutku brisanja, preneha beležiti do ponovnega odprtja (da se uporabnik ne vrne takoj).
+                // - Ob naslednjem odprtju aplikacije se beleženje začne znova; gost mora ponovno vpisati ime in priimek.
+                // Odjemalec markerja nikoli ne briše (zato ne potrebuje pravic za pisanje).
+                const resetBaseline = {};
+                function handleFreshReset(user) {
+                    if (!user || !user.isAnonymous || showGuestModal.value) return;
+                    userName.value = '';
+                    ls.remove('ponikva_user_name');
+                    openGuestModal();
+                }
                 async function isTrackingSuppressed(user) {
                     if (!user) return false;
-                    const markerRef = doc(db, 'userTrackingResets', user.uid);
                     try {
-                        const marker = await getDoc(markerRef);
-                        if (!marker.exists()) return false;
-                        const deletedAt = marker.data().deletedAt?.toMillis?.() || 0;
-                        const signedInAt = Date.parse(user.metadata?.lastSignInTime || '');
-                        if (deletedAt && Number.isFinite(signedInAt) && signedInAt > deletedAt) {
-                            await deleteDoc(markerRef);
+                        const marker = await getDoc(doc(db, 'userTrackingResets', user.uid));
+                        const ms = marker.exists() ? (marker.data().deletedAt?.toMillis?.() || 0) : 0;
+                        if (!(user.uid in resetBaseline)) {
+                            // prvi pregled na tej strani
+                            resetBaseline[user.uid] = ms;
+                            const ackKey = 'ponikva_reset_ack_' + user.uid;
+                            if (ms && String(ms) !== ls.get(ackKey)) {
+                                ls.set(ackKey, String(ms));
+                                handleFreshReset(user);
+                            }
                             return false;
                         }
-                        return true;
+                        // brisanje med trenutno sejo
+                        return !!ms && ms !== resetBaseline[user.uid];
                     } catch (e) {
-                        console.warn('Stanja beleženja ni bilo mogoče preveriti:', e);
-                        return true;
+                        console.warn('Stanja beleženja ni bilo mogoče preveriti (preverite Firestore pravila za userTrackingResets):', e);
+                        return false;
                     }
                 }
 
@@ -1442,7 +1492,7 @@
                         }, { merge: true });
                         await setDoc(doc(db, 'userStats', u.uid), { lastSeenAt: serverTimestamp(), name: userName.value || u.displayName || '', email: u.email || '', isAnonymous: !!u.isAnonymous }, { merge: true });
                     } catch (e) { /* pravila še niso posodobljena */ }
-                    const sessionId = sessionStorage.getItem('ponikva_session_id');
+                    const sessionId = ss.get('ponikva_session_id');
                     if (sessionId) {
                         try {
                             const sessionRef = doc(db, 'userSessions', sessionId);
@@ -1507,30 +1557,60 @@
                     try { await deleteDoc(doc(db, 'presence', id)); } catch (e) { triggerToast('Napaka', 'Brisanje ni uspelo.', 'error'); }
                 }
 
-                async function clearUserTracking(uid) {
-                    const sessions = await getDocs(query(collection(db, 'userSessions'), where('uid', '==', uid)));
-                    const profileRefs = [
-                        doc(db, 'userStats', uid),
-                        doc(db, 'guests', uid),
-                        doc(db, 'presence', uid)
-                    ];
-                    const profileSnapshots = await Promise.all(profileRefs.map(ref => getDoc(ref)));
-                    const refs = [
-                        ...profileRefs.filter((_, i) => profileSnapshots[i].exists()),
-                        ...sessions.docs.map(session => session.ref)
-                    ];
-                    for (let i = 0; i < refs.length; i += 450) {
+                // Potrditveno okno v aplikaciji (window.confirm je v nekaterih brskalnikih/PWA blokiran in tiho vrne false)
+                const confirmDialog = ref({ show: false, title: '', text: '', okLabel: 'Potrdi', danger: true });
+                let confirmResolve = null;
+                function askConfirm(opts) {
+                    if (confirmResolve) { confirmResolve(false); confirmResolve = null; }
+                    return new Promise((resolve) => {
+                        confirmResolve = resolve;
+                        confirmDialog.value = { show: true, title: '', text: '', okLabel: 'Potrdi', danger: true, ...opts };
+                    });
+                }
+                function answerConfirm(value) {
+                    confirmDialog.value.show = false;
+                    if (confirmResolve) { confirmResolve(value); confirmResolve = null; }
+                }
+
+                function explainError(e) {
+                    if (e && e.code === 'permission-denied') return 'Firestore pravila skrbniku ne dovoljujejo te operacije (permission-denied). Posodobite pravila.';
+                    return `${(e && e.code) || 'neznana napaka'}${e && e.message ? ': ' + e.message : ''}`;
+                }
+
+                async function commitInBatches(ops) {
+                    for (let i = 0; i < ops.length; i += 450) {
                         const batch = writeBatch(db);
-                        refs.slice(i, i + 450).forEach(ref => batch.delete(ref));
+                        ops.slice(i, i + 450).forEach(op => op(batch));
                         await batch.commit();
                     }
                 }
 
+                async function clearUserTracking(uid) {
+                    const sessions = await getDocs(query(collection(db, 'userSessions'), where('uid', '==', uid)));
+                    const refs = [
+                        doc(db, 'userStats', uid),
+                        doc(db, 'guests', uid),
+                        doc(db, 'presence', uid),
+                        ...sessions.docs.map(session => session.ref)
+                    ];
+                    // brisanje neobstoječega dokumenta v Firestore ni napaka, zato ni treba preverjati obstoja
+                    await commitInBatches(refs.map(ref => (batch) => batch.delete(ref)));
+                }
+
                 function userRecordLabel(user) { return user.name || user.email || user.id; }
+
                 async function resetUserTracking(user) {
-                    if (!isAdmin.value || !user?.id || !window.confirm(`Ponastavim zgodovino obiskov in seje za ${userRecordLabel(user)}? Ob naslednji aktivnosti se bodo podatki začeli beležiti znova. Rezervacije in prijavni račun ostanejo.`)) return;
+                    if (!isAdmin.value || !user?.id) return;
+                    const ok = await askConfirm({
+                        title: 'Ponastavim evidenco?',
+                        text: `Zgodovina obiskov in seje za ${userRecordLabel(user)} bodo izbrisane, števec obiskov se začne pri 0. Rezervacije in prijavni račun ostanejo.`,
+                        okLabel: 'Ponastavi'
+                    });
+                    if (!ok) return;
+                    let step = 'brisanje evidenc';
                     try {
                         await clearUserTracking(user.id);
+                        step = 'nov zapis statistike';
                         await setDoc(doc(db, 'userStats', user.id), {
                             uid: user.id,
                             name: user.name || '',
@@ -1541,26 +1621,71 @@
                             lastSeenAt: serverTimestamp()
                         });
                         if (selectedUserHistory.value?.id === user.id) selectedUserHistory.value = null;
-                        triggerToast('Beleženje ponastavljeno', 'Stara statistika in zgodovina sej sta izbrisani. Novi obiski se bodo beležili znova.', 'success');
+                        triggerToast('Evidenca ponastavljena', 'Novi obiski se bodo beležili od začetka.', 'success');
                     } catch (e) {
-                        console.error('Ponastavitev uporabniških evidenc ni uspela:', e);
-                        triggerToast('Napaka', `Ponastavitev ni uspela (${e.code || 'neznana napaka'}). ${e.message || 'Preverite Firestore pravila.'}`, 'error');
+                        console.error(`Ponastavitev ni uspela (korak: ${step}):`, e);
+                        triggerToast('Ponastavitev ni uspela', `Korak: ${step}. ${explainError(e)}`, 'error');
                     }
                 }
 
                 async function deleteUserTracking(user) {
-                    if (!isAdmin.value || !user?.id || !window.confirm(`Odstranim ${userRecordLabel(user)} s seznama in izbrišem njegove evidence? Rezervacije in prijavni račun ostanejo. Uporabnik se bo znova pojavil po naslednji prijavi.`)) return;
+                    if (!isAdmin.value || !user?.id) return;
+                    const ok = await askConfirm({
+                        title: 'Izbrišem evidence uporabnika?',
+                        text: `${userRecordLabel(user)} bo odstranjen s seznama. Rezervacije in prijavni račun ostanejo. Uporabnik se bo na seznamu spet pojavil, ko bo naslednjič odprl aplikacijo (gost bo moral znova vpisati ime in priimek).`,
+                        okLabel: 'Izbriši'
+                    });
+                    if (!ok) return;
+                    let step = 'označevanje izbrisa (userTrackingResets)';
                     try {
-                        await setDoc(doc(db, 'userTrackingResets', user.id), {
-                            uid: user.id,
-                            deletedAt: serverTimestamp()
-                        });
+                        if (user.id !== currentUser.value?.uid) {
+                            await setDoc(doc(db, 'userTrackingResets', user.id), { uid: user.id, deletedAt: serverTimestamp() });
+                        }
+                        step = 'brisanje evidenc';
                         await clearUserTracking(user.id);
                         if (selectedUserHistory.value?.id === user.id) selectedUserHistory.value = null;
-                        triggerToast('Uporabnik odstranjen', 'Evidence so izbrisane. Uporabnik se bo v seznam vrnil po naslednji prijavi; rezervacije ostanejo.', 'success');
+                        triggerToast('Evidence izbrisane', 'Uporabnik se bo na seznamu pojavil ob naslednjem odprtju aplikacije; rezervacije ostanejo.', 'success');
                     } catch (e) {
-                        console.error('Brisanje uporabniških evidenc ni uspelo:', e);
-                        triggerToast('Napaka', `Brisanje ni uspelo (${e.code || 'neznana napaka'}). ${e.message || 'Preverite Firestore pravila.'}`, 'error');
+                        console.error(`Brisanje ni uspelo (korak: ${step}):`, e);
+                        triggerToast('Brisanje ni uspelo', `Korak: ${step}. ${explainError(e)}`, 'error');
+                    }
+                }
+
+                // Izbriše evidence VSEH uporabnikov (statistika, gostje, prisotnost, seje) - rezervacije ostanejo
+                async function deleteAllTracking() {
+                    if (!isAdmin.value) return;
+                    const ok = await askConfirm({
+                        title: 'Izbrišem vse uporabnike?',
+                        text: 'S seznama bodo odstranjeni vsi uporabniki, njihove seje in števci obiskov. Rezervacije in prijavni računi ostanejo. Seznam se bo ponovno polnil, ko bodo uporabniki odprli aplikacijo; gostje bodo morali znova vpisati ime in priimek.',
+                        okLabel: 'Izbriši vse'
+                    });
+                    if (!ok) return;
+                    let step = 'branje zbirk';
+                    try {
+                        const me = currentUser.value.uid;
+                        const cols = ['userStats', 'guests', 'presence', 'userSessions'];
+                        const snaps = await Promise.all(cols.map(c => getDocs(collection(db, c))));
+                        const uids = new Set();
+                        const delRefs = [];
+                        snaps.forEach((snap, i) => snap.docs.forEach((d) => {
+                            delRefs.push(d.ref);
+                            uids.add(cols[i] === 'userSessions' ? (d.data().uid || '') : d.id);
+                        }));
+                        uids.delete('');
+                        uids.delete(me);
+
+                        step = 'označevanje izbrisa (userTrackingResets)';
+                        await commitInBatches([...uids].map(uid => (batch) =>
+                            batch.set(doc(db, 'userTrackingResets', uid), { uid, deletedAt: serverTimestamp() })));
+
+                        step = 'brisanje evidenc';
+                        await commitInBatches(delRefs.map(ref => (batch) => batch.delete(ref)));
+
+                        selectedUserHistory.value = null;
+                        triggerToast('Vsi uporabniki izbrisani', `Odstranjenih zapisov: ${delRefs.length}. Seznam se bo polnil ob novih obiskih.`, 'success');
+                    } catch (e) {
+                        console.error(`Množično brisanje ni uspelo (korak: ${step}):`, e);
+                        triggerToast('Brisanje ni uspelo', `Korak: ${step}. ${explainError(e)}`, 'error');
                     }
                 }
 
@@ -1569,12 +1694,13 @@
                 function loadSettingsForm() {
                     const s = settings.value;
                     settingsForm.value = {
-                        courts: { court1: s.courts.court1.active !== false, court2: s.courts.court2.active !== false },
+                        courts: { court1: s.courts?.court1?.active !== false, court2: s.courts?.court2?.active !== false },
                         openHour: s.openHour, closeHour: s.closeHour, dailyLimit: s.dailyLimit, weeklyLimit: s.weeklyLimit,
                         seasonStart: s.seasonStart || '', seasonEnd: s.seasonEnd || '', notice: s.notice || ''
                     };
                 }
                 watch(activeTab, (t) => { if (t === 'admin') loadSettingsForm(); });
+                watch(isAdmin, (v) => { if (!v && activeTab.value === 'admin') activeTab.value = 'schedule'; });
 
                 async function saveSettings() {
                     const f = settingsForm.value;
@@ -1686,9 +1812,10 @@
                 // User's future bookings list
                 const userFutureBookings = computed(() => {
                     if (!currentUser.value) return [];
-                    const todayStr = getNowInfo().todayStr;
+                    const { todayStr, hour: nowHour } = getNowInfo();
                     return bookings.value
-                        .filter(b => b.userId === currentUser.value.uid && b.date >= todayStr)
+                        .filter(b => b.userId === currentUser.value.uid
+                            && (b.date > todayStr || (b.date === todayStr && Number(b.startHour) > nowHour)))
                         .sort((a, b) => (a.date + a.timeSlot).localeCompare(b.date + b.timeSlot));
                 });
 
@@ -1898,36 +2025,39 @@
                 let sessionUid = null;
                 async function registerUserSession(user) {
                     if (!user || sessionUid === user.uid) return;
-                    if (await isTrackingSuppressed(user)) return;
+                    sessionUid = user.uid; // takoj zaklenemo, da vzporedna klica ne ustvarita dveh sej
+                    if (await isTrackingSuppressed(user)) { sessionUid = null; return; }
                     const sessionKey = 'ponikva_session_id';
                     const sessionUserKey = 'ponikva_session_uid';
-                    let sessionId = sessionStorage.getItem(sessionKey);
-                    const existingSessionUid = sessionStorage.getItem(sessionUserKey);
+                    let sessionId = ss.get(sessionKey);
+                    const existingSessionUid = ss.get(sessionUserKey);
                     if (sessionId && existingSessionUid === user.uid) {
                         try {
                             const existing = await getDoc(doc(db, 'userSessions', sessionId));
                             if (existing.exists()) { sessionUid = user.uid; return; }
                         } catch (e) { console.warn('Seje ni bilo mogoče preveriti:', e); }
                     }
-                    sessionUid = user.uid;
                     sessionId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
-                    sessionStorage.setItem(sessionKey, sessionId);
-                    sessionStorage.setItem(sessionUserKey, user.uid);
+                    ss.set(sessionKey, sessionId);
+                    ss.set(sessionUserKey, user.uid);
                     const statsRef = doc(db, 'userStats', user.uid);
                     const nowMs = Date.now();
                     try {
-                        const stat = userStats.value.find(x => x.id === user.uid);
-                        const currentVisitCount = Number(stat?.visitCount || 0);
-                        const nextVisitCount = currentVisitCount + 1;
+                        // Obstoječi zapis preberemo neposredno (seznam userStats je naložen samo skrbniku)
+                        let hasFirstSeen = false;
+                        try {
+                            const snap = await getDoc(statsRef);
+                            hasFirstSeen = snap.exists() && !!snap.data().firstSeenAt;
+                        } catch (e) { /* če branje ni dovoljeno, firstSeenAt ne prepisujemo na slepo */ hasFirstSeen = true; }
 
                         await setDoc(statsRef, {
-                            uid: user.uid, 
-                            name: userName.value || user.displayName || '', 
+                            uid: user.uid,
+                            name: userName.value || user.displayName || '',
                             email: user.email || '',
-                            isAnonymous: !!user.isAnonymous, 
+                            isAnonymous: !!user.isAnonymous,
                             lastSeenAt: serverTimestamp(),
-                            visitCount: nextVisitCount,
-                            ...(currentVisitCount === 0 ? { firstSeenAt: serverTimestamp() } : {})
+                            visitCount: increment(1),
+                            ...(hasFirstSeen ? {} : { firstSeenAt: serverTimestamp() })
                         }, { merge: true });
 
                         const sessionRef = doc(db, 'userSessions', sessionId);
@@ -1976,6 +2106,7 @@
                                 sessionUid = null;
                             }
                         } else {
+                            sessionUid = null;
                             stopBookingsListener();
                         }
                     });
@@ -2150,7 +2281,7 @@
 
                     try {
                         userName.value = name;
-                        localStorage.setItem('ponikva_user_name', name);
+                        ls.set('ponikva_user_name', name);
 
                         let user = auth.currentUser;
                         // Če brskalnik še ni prijavljen, izvedemo anonimno prijavo
@@ -2197,8 +2328,9 @@
 
                 async function logout() {
                     try { if (currentUser.value) await setDoc(doc(db, 'presence', currentUser.value.uid), { online: false, lastSeen: serverTimestamp() }, { merge: true }); } catch (e) {}
-                    sessionStorage.removeItem('ponikva_session_id');
-                    sessionStorage.removeItem('ponikva_session_uid');
+                    if (currentUser.value) delete resetBaseline[currentUser.value.uid];
+                    ss.remove('ponikva_session_id');
+                    ss.remove('ponikva_session_uid');
                     sessionUid = null;
                     await signOut(auth);
                     triggerToast('Odjavljeni', 'Uspešno ste se odjavili.', 'info');
@@ -2209,8 +2341,9 @@
                 }
 
                 function saveProfile() {
+                    userName.value = (userName.value || '').trim();
                     if (userName.value) {
-                        localStorage.setItem('ponikva_user_name', userName.value);
+                        ls.set('ponikva_user_name', userName.value);
                         if (currentUser.value && currentUser.value.isAnonymous) {
                             saveGuestRecord(currentUser.value, userName.value.trim());
                         }
@@ -2225,7 +2358,7 @@
                     manualForm, addManualBooking, adminDate, adminSearch, adminOnlyFuture, adminBookings,
                     presenceList, onlineCount, fmtTs, removePresence,
                     userDirectory, filteredUsers, userSearch, userTypeFilter, usersToday, totalVisits, selectedUserHistory, selectedUserSessions, showUserHistory,
-                    resetUserTracking, deleteUserTracking,
+                    resetUserTracking, deleteUserTracking, deleteAllTracking, confirmDialog, answerConfirm,
                     dateText, onDateTextInput, commitDateText, openDatePicker,
                     activeTab,
                     selectedDate,
@@ -2280,7 +2413,8 @@
                     sendContactMail,
                     logout,
                     openProfileModal,
-                    saveProfile
+                    saveProfile,
+                    hoursLabel
                 };
             }
         }).mount('#app');
