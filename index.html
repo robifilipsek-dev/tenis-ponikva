@@ -1799,11 +1799,18 @@
                     try {
                         const stat = userStats.value.find(x => x.id === user.uid);
                         const currentVisitCount = Number(stat?.visitCount || 0);
+                        const nextVisitCount = currentVisitCount + 1;
+
                         await setDoc(statsRef, {
-                            uid: user.uid, name: userName.value || user.displayName || '', email: user.email || '',
-                            isAnonymous: !!user.isAnonymous, lastSeenAt: serverTimestamp(),
-                            ...(currentVisitCount ? { visitCount: currentVisitCount + 1 } : { visitCount: 1, firstSeenAt: serverTimestamp() })
+                            uid: user.uid, 
+                            name: userName.value || user.displayName || '', 
+                            email: user.email || '',
+                            isAnonymous: !!user.isAnonymous, 
+                            lastSeenAt: serverTimestamp(),
+                            visitCount: nextVisitCount,
+                            ...(currentVisitCount === 0 ? { firstSeenAt: serverTimestamp() } : {})
                         }, { merge: true });
+
                         const sessionRef = doc(db, 'userSessions', sessionId);
                         await setDoc(sessionRef, { 
                             uid: user.uid, 
