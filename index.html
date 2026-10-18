@@ -1981,7 +1981,7 @@
                         const date = addDaysStr(weekBounds.value.start, i);
                         const [, monthNum, dayNum] = date.split('-').map(Number);
 
-                        const courts = courts.value.map(c => {
+                        const dayCourts = courts.value.map(c => {
                             let free = 0;
                             const cells = [];
                             for (let hour = settings.value.openHour; hour < settings.value.closeHour; hour++) {
@@ -2008,8 +2008,8 @@
                             dayNum,
                             monthNum,
                             isToday: date === todayStr,
-                            courts,
-                            totalFree: courts.reduce((sum, c) => sum + c.free, 0)
+                            courts: dayCourts,
+                            totalFree: dayCourts.reduce((sum, c) => sum + c.free, 0)
                         });
                     }
                     return days;
