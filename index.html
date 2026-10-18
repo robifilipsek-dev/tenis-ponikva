@@ -746,16 +746,19 @@
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i>
-                                <span><strong>Preklic termina:</strong> Če ne boste mogli igrati, prosimo, da rezervacijo prekličete vsaj 1 uro prej, da se termin sprosti za ostale članice in člane.</span>
+                                <span><strong>Preklic termina:</strong> Če termina ne boste izkoristili, ga prekličite čim prej in pred začetkom rezervirane ure. Začete in pretekle termine lahko izbriše samo skrbnik.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-shoe-prints text-clay-600 mt-0.5"></i>
-                                <span><strong>Oprema:</strong> Uporabljajte čiste teniške copate, primerne za izbrano podlago in skladne z navodili upravljavca. V dvorani uporabljajte obutev, ki ne pušča sledi.</span>
+                                <span><strong>Obutev:</strong> Igrajte v teniških copatih, primernih za podlago izbranega igrišča. Pred vstopom odstranite pesek in umazanijo s podplatov.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-broom text-clay-600 mt-0.5"></i>
-                                <span><strong>Po uporabi:</strong> Pospravite žogice, odpadke in osebne stvari ter opremo vrnite na mesto. Urejanje zaključite do konca rezerviranega termina. Poškodbe sporočite upravljavcu.</span>
+                                <span><strong>Za vsa igrišča:</strong> Po igri poberite žogice, odnesite odpadke in osebne stvari ter uporabljeno opremo vrnite na označeno mesto. Igrišče zapustite urejeno do konca rezerviranega termina. Morebitne poškodbe sporočite upravljavcu.</span>
                             </li>
+                        </ul>
+                        <h3 class="font-semibold text-sm text-slate-800 pt-2">Urejanje po igri glede na podlago</h3>
+                        <ul class="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
                             <li v-for="group in surfaceGroups" :key="group.id" class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-circle-info mt-0.5" :style="{ color: group.color }"></i>
                                 <span><strong>{{ group.label }}:</strong> {{ surfaceCare[group.id] || surfaceCare.other }}</span>
@@ -1473,12 +1476,12 @@
                 const courtCountLabel = n => n % 100 === 1 ? 'igrišče' : n % 100 === 2 ? 'igrišči' : [3,4].includes(n % 100) ? 'igrišča' : 'igrišč';
                 const surfaceGroups = computed(() => surfaceOptions.value.map(s => ({ ...s, ...surfaceAppearance[s.id], color: surfaceColor(s.id), phrase: surfaceAppearance[s.id]?.phrase || ('s podlago ' + s.label), count: courts.value.filter(c => c.surface === s.id).length })).filter(s => s.count > 0));
                 const surfaceCare = {
-                    clay: 'Po igri poravnajte podlago z namensko vlečno mrežo in očistite črte. Mrežo vrnite na mesto. Zalivajte samo po navodilih upravljavca; razmočene podlage ne urejajte in je ne uporabljajte.',
-                    hard: 'Pospravite igrišče in odstranite drobne odpadke z ustreznim pripomočkom. Podlage ne poravnavajte z mrežo za pesek. Čiščenje madežev in odstranjevanje vode prepustite upravljavcu oziroma sledite njegovim navodilom.',
-                    grass: 'Pospravite igrišče, ne vlecite mreže za pesek in ne posegajte v travno rušo. Poškodbe ruše prijavite upravljavcu. Košnjo, valjanje in obnovo izvaja vzdrževalec.',
-                    indoor: 'Uporabljajte čiste copate, ki ne puščajo sledi, in pospravite igrišče. Način čiščenja je odvisen od dejanske podlage v dvorani; uporabljajte samo pripomočke, ki jih določi upravljavec.',
-                    artificial: 'Odstranite odpadke. Če upravljavec zahteva krtačenje po igri, uporabite namensko krtačo in predpisano smer krtačenja. Polnila ne dodajajte ali odstranjujte sami; ne uporabljajte mreže za pesek, če za to podlago ni odobrena.',
-                    other: 'Igrišče pospravite in pri čiščenju ter urejanju upoštevajte navodila upravljavca za konkretno podlago. Brez navodil ne uporabljajte vlečne mreže, vode ali čistil.'
+                    clay: 'Pred iztekom termina povlecite namensko mrežo po obeh polovicah igrišča, tudi po prostoru za osnovnima črtama in ob straneh. Nato z namensko krtačo očistite črte. Pripomočke vrnite na mesto. Za zalivanje upoštevajte navodila upravljavca. Če je podlaga razmočena ali poškodovana, igro prekinite in obvestite upravljavca.',
+                    hard: 'Po igri zadostuje, da igrišče pustite čisto in pospravljeno; vlečenje mreže ni potrebno. Razlito tekočino ali umazanijo, ki bi lahko povzročila zdrs, sporočite upravljavcu. Za čiščenje uporabite le pripomočke, ki jih odobri upravljavec.',
+                    grass: 'Po igri poberite žogice in druge predmete ter prijavite poškodovane ali privzdignjene dele travne ruše. Igralci igrišča ne poravnavajo z vlečno mrežo. Košnjo, valjanje in popravilo ruše opravi vzdrževalec.',
+                    indoor: 'Vstopajte v čistih teniških copatih, ki ne puščajo sledi. Po igri pospravite igrišče in uporabljeno opremo. Dvorana lahko ima različne podlage, zato morebitno krtačenje ali drugo urejanje izvedite po navodilih za konkretno podlago v dvorani.',
+                    artificial: 'Po igri odstranite žogice in druge predmete. Če je pri igrišču predpisano krtačenje po uporabi, ga opravite s priloženo namensko krtačo po navodilih upravljavca. Za razporejanje ali dopolnjevanje polnila skrbi vzdrževalec, razen če upravljavec izrecno določi drugače.',
+                    other: 'Upoštevajte navodila za urejanje, objavljena pri tem igrišču. Če posebnih navodil ni, igrišče pustite čisto in pospravljeno, glede dodatnega urejanja pa se obrnite na upravljavca.'
                 };
                 const pad = pad2;
                 const courtName = (id) => (allCourts.value.find(c => c.id === id) || { name: id }).name;
