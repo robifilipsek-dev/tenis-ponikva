@@ -198,7 +198,18 @@
         .date-picker-native { min-height: 42px; }
         .date-picker-native::-webkit-calendar-picker-indicator { opacity: 0.9; cursor: pointer; padding: 2px; }
         @media (max-width: 640px) { .date-picker-native { width: 10rem; } }
-</style>
+
+        *, *::before, *::after { box-sizing: border-box; }
+        button:disabled { opacity: .55; cursor: wait; }
+        button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #40916c; outline-offset: 2px; }
+        .fixed.inset-0 > div { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+        @media (max-width: 640px) {
+            header .h-16 { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding-block: 8px; }
+            input, select, textarea { font-size: 16px !important; min-width: 0; }
+            button { min-height: 40px; }
+            .self-center { flex-wrap: wrap; max-width: 100%; }
+        }
+    </style>
 </head>
 <body class="text-slate-800 bg-slate-100 min-h-screen flex flex-col antialiased">
 
@@ -281,8 +292,18 @@
                         <div class="bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
                             <span class="text-slate-400 font-medium">Igrišča</span>
                             <span class="text-sm font-bold text-court-highlight flex items-center gap-1.5 mt-0.5">
-                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-clay-500" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2.5" y="5" width="19" height="14" rx="1"/><path d="M12 5v14"/></svg>
-                                2 peščeni igrišči
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" width="36" height="24" style="flex:0 0 36px;display:block" aria-hidden="true" focusable="false">
+                                    <rect width="48" height="32" rx="4" fill="#b94f35"/>
+                                    <g fill="none" stroke="#fff8ed" stroke-width="1.2" stroke-linejoin="round">
+                                        <path d="M5 5H43V27H5ZM5 8H43M5 24H43M15 8V24M33 8V24M15 16H33"/>
+                                        <path d="M4 16H6M42 16H44"/>
+                                    </g>
+                                    <path d="M24 3V29" stroke="#233d32" stroke-width="2.8"/>
+                                    <path d="M24 3V29" stroke="#fff8ed" stroke-width="1" stroke-dasharray="1.5 1.2"/>
+                                    <circle cx="24" cy="3" r="1.4" fill="#fff8ed"/>
+                                    <circle cx="24" cy="29" r="1.4" fill="#fff8ed"/>
+                                </svg>
+                                {{ courts.length }} {{ courts.length === 1 ? 'peščeno igrišče' : courts.length === 2 ? 'peščeni igrišči' : courts.length < 5 ? 'peščena igrišča' : 'peščenih igrišč' }}
                             </span>
                         </div>
                         <div class="bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
@@ -313,7 +334,7 @@
 
             <!-- NAVIGATION TABS -->
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-slate-200 pb-3">
-                <nav class="flex w-full lg:w-auto gap-1.5 sm:gap-3">
+                <nav class="flex flex-wrap w-full lg:w-auto gap-1.5 sm:gap-3">
                     <button
                         v-for="tab in tabs" :key="tab.id"
                         @click="activeTab = tab.id"
@@ -398,20 +419,9 @@
                             @click="courtFilter = 'all'" 
                             :class="courtFilter === 'all' ? 'bg-white font-semibold text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
                             class="px-3 py-1.5 rounded-lg text-xs transition">
-                            Obe igrišči
+                            Vsa igrišča
                         </button>
-                        <button 
-                            @click="courtFilter = 'court1'" 
-                            :class="courtFilter === 'court1' ? 'bg-white font-semibold text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                            class="px-3 py-1.5 rounded-lg text-xs transition">
-                            Igrišče 1
-                        </button>
-                        <button 
-                            @click="courtFilter = 'court2'" 
-                            :class="courtFilter === 'court2' ? 'bg-white font-semibold text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                            class="px-3 py-1.5 rounded-lg text-xs transition">
-                            Igrišče 2
-                        </button>
+                        <button v-for="c in courts" :key="c.id" @click="courtFilter = c.id" :class="courtFilter === c.id ? 'bg-white font-semibold text-slate-800 shadow-sm' : 'text-slate-600'" class="px-3 py-1.5 rounded-lg text-xs transition">{{ c.name }}</button>
                     </div>
 
                 </div>
@@ -682,7 +692,7 @@
                             <div>
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded border border-amber-300">
-                                        {{ booking.courtId === 'court1' ? 'Igrišče 1' : 'Igrišče 2' }}
+                                        {{ courtName(booking.courtId) }}
                                     </span>
                                     <span class="text-xs font-mono font-bold text-slate-600">
                                         {{ booking.date }}
@@ -781,32 +791,34 @@
                 <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
                     <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-sliders text-court-green"></i> Stanje igrišč in obratovanje</h2>
                     <div class="grid sm:grid-cols-2 gap-3">
-                        <label v-for="c in courts" :key="c.id" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 cursor-pointer">
-                            <span class="font-semibold text-sm text-slate-800">{{ c.name }}</span>
-                            <span class="flex items-center gap-2 text-xs font-semibold" :class="settingsForm.courts[c.id] ? 'text-emerald-700' : 'text-slate-400'">
-                                {{ settingsForm.courts[c.id] ? 'Aktivno' : 'Neaktivno' }}
-                                <input type="checkbox" v-model="settingsForm.courts[c.id]" class="w-5 h-5 accent-emerald-600">
-                            </span>
-                        </label>
+                        <template v-for="(c,id) in settingsForm.courts" :key="id">
+                            <div v-if="!c.removed" class="p-3 rounded-xl border border-slate-200 space-y-2 min-w-0">
+                                <label class="block text-xs font-semibold">Ime igrišča<input v-model="c.name" maxlength="60" class="mt-1 w-full border rounded-lg p-2" :disabled="settingsBusy"></label>
+                                <div class="flex items-center justify-between gap-2"><label class="text-xs flex items-center gap-2"><input type="checkbox" v-model="c.active" :disabled="settingsBusy" class="w-5 h-5"> Aktivno</label>
+                                <button @click="removeCourt(id)" :disabled="settingsBusy" class="text-red-700 text-xs p-2">Odstrani</button></div>
+                            </div>
+                        </template>
                     </div>
+                    <div class="flex flex-wrap gap-2"><input aria-label="Ime novega igrišča" v-model="newCourtName" maxlength="60" placeholder="Ime novega igrišča" class="border rounded-lg px-3 py-2 min-w-0 flex-1" @keyup.enter="addCourt"><button @click="addCourt" :disabled="settingsBusy" class="rounded-lg bg-slate-100 px-4 py-2 text-sm">Dodaj igrišče</button></div>
+                    <p class="text-xs text-slate-500">Spremembe igrišč potrdite z gumbom Shrani nastavitve. Odstranitev ohrani zgodovino rezervacij.</p>
                     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-semibold text-slate-600">
                         <label>Začetek sezone<input type="date" v-model="settingsForm.seasonStart" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                         <label>Konec sezone<input type="date" v-model="settingsForm.seasonEnd" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                         <label>Odprtje (ura)<input type="number" min="0" max="23" v-model.number="settingsForm.openHour" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                         <label>Zaprtje (ura)<input type="number" min="1" max="24" v-model.number="settingsForm.closeHour" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
-                        <label>Dnevna kvota (ur)<input type="number" min="1" max="16" v-model.number="settingsForm.dailyLimit" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
-                        <label>Tedenska kvota (ur)<input type="number" min="1" max="50" v-model.number="settingsForm.weeklyLimit" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Dnevna kvota (ur)<input type="number" min="1" max="24" v-model.number="settingsForm.dailyLimit" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label>Tedenska kvota (ur)<input type="number" min="1" max="168" v-model.number="settingsForm.weeklyLimit" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                         <label class="sm:col-span-2">Obvestilo za uporabnike (neobvezno)<input type="text" maxlength="160" v-model="settingsForm.notice" placeholder="npr. Igrišči sta zaprti do pomladi" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                     </div>
                     <p class="text-[11px] text-slate-500">Izven sezone so igrišča prikazana kot Neaktivno, termini pa kot Zaprt. Prazna datuma = brez omejitve sezone.</p>
-                    <button @click="saveSettings" class="px-4 py-2 rounded-xl bg-court-green hover:bg-court-dark text-white text-sm font-semibold shadow-sm">Shrani nastavitve</button>
+                    <button @click="saveSettings" :disabled="settingsBusy" class="px-4 py-2 rounded-xl bg-court-green hover:bg-court-dark text-white text-sm font-semibold shadow-sm">Shrani nastavitve</button>
                 </div>
 
                 <!-- Zaprtja -->
                 <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
                     <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-ban text-court-green"></i> Zaprtja (turnir, vzdrževanje, dež)</h2>
                     <div class="grid sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs font-semibold text-slate-600">
-                        <label>Igrišče<select v-model="closureForm.courtId" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"><option value="all">Obe igrišči</option><option v-for="c in courts" :key="c.id" :value="c.id">{{ c.name }}</option></select></label>
+                        <label>Igrišče<select v-model="closureForm.courtId" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"><option value="all">Vsa igrišča</option><option v-for="c in courts" :key="c.id" :value="c.id">{{ c.name }}</option></select></label>
                         <label>Od datuma<input type="date" v-model="closureForm.date" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                         <label>Do datuma (neobvezno)<input type="date" v-model="closureForm.dateTo" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                         <label>Od ure<input type="number" min="0" max="23" v-model.number="closureForm.fromHour" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
@@ -816,7 +828,7 @@
                     <button @click="addClosure" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold">Dodaj zaprtje</button>
                     <div v-if="closures.length === 0" class="text-xs text-slate-500">Ni zaprtij.</div>
                     <div v-for="c in sortedClosures" :key="c.id" class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                        <span><strong>{{ c.courtId === 'all' ? 'Obe igrišči' : courtName(c.courtId) }}</strong> · {{ c.date }}<span v-if="c.dateTo && c.dateTo !== c.date"> → {{ c.dateTo }}</span> · {{ pad(c.fromHour) }}:00–{{ pad(c.toHour) }}:00<span v-if="c.note" class="text-slate-500"> · {{ c.note }}</span></span>
+                        <span><strong>{{ c.courtId === 'all' ? 'Vsa igrišča' : courtName(c.courtId) }}</strong> · {{ c.date }}<span v-if="c.dateTo && c.dateTo !== c.date"> → {{ c.dateTo }}</span> · {{ pad(c.fromHour) }}:00–{{ pad(c.toHour) }}:00<span v-if="c.note" class="text-slate-500"> · {{ c.note }}</span></span>
                         <button @click="removeClosure(c.id)" class="px-2.5 py-1 rounded-lg bg-red-100 text-red-700 border border-red-300 font-semibold"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 </div>
@@ -966,7 +978,7 @@
                 <div v-if="targetSlot" class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2 mb-5 text-xs">
                     <div class="flex justify-between">
                         <span class="text-slate-500">Igrišče:</span>
-                        <span class="font-bold text-slate-800">{{ targetCourt === 'court1' ? 'Igrišče 1 (Peščeno)' : 'Igrišče 2 (Peščeno)' }}</span>
+                        <span class="font-bold text-slate-800">{{ courtName(targetCourt) }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-slate-500">Datum:</span>
@@ -1040,7 +1052,7 @@
                 <h3 class="font-display font-bold text-lg text-slate-900">Preklic rezervacije</h3>
                 <p class="text-xs text-slate-600 mt-2 leading-relaxed">
                     Ali ste prepričani, da želite preklicati rezervacijo za 
-                    <strong class="text-slate-800">{{ targetBookingToCancel?.courtId === 'court1' ? 'Igrišče 1' : 'Igrišče 2' }}</strong>
+                    <strong class="text-slate-800">{{ courtName(targetBookingToCancel?.courtId) }}</strong>
                     dne <strong>{{ targetBookingToCancel?.date }}</strong> ob <strong>{{ targetBookingToCancel?.timeSlot }}</strong>?
                 </p>
 
@@ -1193,13 +1205,13 @@
         const db = getFirestore(app);
 
         // Helper: Get ISO YYYY-MM-DD
-        function getTodayString() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        const VENUE_TIME_ZONE = 'Europe/Ljubljana';
+        function venueTime(timestamp = Date.now()) {
+            const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: VENUE_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(timestamp)).map(p => [p.type, p.value]));
+            return { todayStr: parts.year + '-' + parts.month + '-' + parts.day, hour: Number(parts.hour) };
         }
+        function getTodayString() { return venueTime().todayStr; }
+
 
         // Helper: Get Monday and Sunday date string for a given date string
         function getWeekBounds(dateStr) {
@@ -1348,8 +1360,7 @@
                 setInterval(() => { nowTick.value = Date.now(); }, 60000);
 
                 function getNowInfo() {
-                    const now = new Date(nowTick.value);
-                    return { todayStr: formatDate(now), hour: now.getHours() };
+                    return venueTime(nowTick.value);
                 }
 
                 // Namestitev spletne strani kot aplikacije (PWA)
@@ -1401,12 +1412,13 @@
                     if (!id) return [];
                     return userSessions.value.filter(s => s.uid === id).sort((a,b) => (b.startedAtMs || 0) - (a.startedAtMs || 0)).slice(0, 50);
                 });
-                const courts = COURTS;
+                const allCourts = computed(() => Object.entries(settings.value.courts).map(([id, c], i) => ({ id, n: i + 1, name: c.name || COURTS.find(x => x.id === id)?.name || id, ...c })));
+                const courts = computed(() => allCourts.value.filter(c => !c.removed));
                 const pad = pad2;
-                const courtName = (id) => (COURTS.find(c => c.id === id) || { name: id }).name;
+                const courtName = (id) => (allCourts.value.find(c => c.id === id) || { name: id }).name;
 
                 const isAdmin = computed(() => !!currentUser.value && !currentUser.value.isAnonymous
-                    && (currentUser.value.email || '').toLowerCase() === ADMIN_EMAIL && currentUser.value.emailVerified !== false);
+                    && (currentUser.value.email || '').toLowerCase() === ADMIN_EMAIL && currentUser.value.emailVerified === true);
 
                 const tabs = computed(() => isAdmin.value ? [...baseTabs, { id: 'admin', icon: 'fa-solid fa-user-shield', short: 'Admin', label: 'Skrbnik' }] : baseTabs);
                 const DAILY_LIMIT = computed(() => settings.value.dailyLimit);
@@ -1425,7 +1437,7 @@
 
                 function courtIsActive(courtId, date) {
                     const s = settings.value;
-                    if (s.courts && s.courts[courtId] && s.courts[courtId].active === false) return false;
+                    if (!s.courts[courtId] || s.courts[courtId].removed || s.courts[courtId].active === false) return false;
                     if (s.seasonStart && date < s.seasonStart) return false;
                     if (s.seasonEnd && date > s.seasonEnd) return false;
                     return true;
@@ -1440,10 +1452,10 @@
 
                 const statusBanner = computed(() => {
                     const s = settings.value, today = getNowInfo().todayStr;
-                    const inactive = COURTS.filter(c => !courtIsActive(c.id, today));
+                    const inactive = courts.value.filter(c => !courtIsActive(c.id, today));
                     if (!inactive.length && !s.notice) return null;
                     let title = '';
-                    if (inactive.length === COURTS.length) title = 'Igrišči sta trenutno neaktivni.';
+                    if (inactive.length === courts.value.length) title = 'Vsa igrišča so trenutno neaktivna.';
                     else if (inactive.length) title = inactive.map(c => c.name).join(', ') + ' je trenutno neaktivno.';
                     else title = 'Obvestilo';
                     return { title, text: s.notice };
@@ -1466,7 +1478,7 @@
                         const d = snap.exists() ? snap.data() : {};
                         settings.value = {
                             ...DEFAULT_SETTINGS, ...d,
-                            courts: { ...DEFAULT_SETTINGS.courts, ...(d.courts || {}) }
+                            courts: d.courts && Object.keys(d.courts).length ? d.courts : DEFAULT_SETTINGS.courts
                         };
                         if (activeTab.value !== 'admin') loadSettingsForm();
                     }, (e) => console.warn('Nastavitve niso berljive (preverite Firestore pravila):', e)));
@@ -1597,6 +1609,7 @@
                     return `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
                 }
                 async function removePresence(id) {
+                    if (!isAdmin.value) return;
                     try { await deleteDoc(doc(db, 'presence', id)); } catch (e) { triggerToast('Napaka', 'Brisanje ni uspelo.', 'error'); }
                 }
 
@@ -1737,7 +1750,7 @@
                 function loadSettingsForm() {
                     const s = settings.value;
                     settingsForm.value = {
-                        courts: { court1: s.courts?.court1?.active !== false, court2: s.courts?.court2?.active !== false },
+                        courts: Object.fromEntries(Object.entries(s.courts).map(([id,c]) => [id, { ...c, name: c.name || courtName(id) }])),
                         openHour: s.openHour, closeHour: s.closeHour, dailyLimit: s.dailyLimit, weeklyLimit: s.weeklyLimit,
                         seasonStart: s.seasonStart || '', seasonEnd: s.seasonEnd || '', notice: s.notice || ''
                     };
@@ -1745,33 +1758,67 @@
                 watch(activeTab, (t) => { if (t === 'admin') loadSettingsForm(); });
                 watch(isAdmin, (v) => { if (!v && activeTab.value === 'admin') activeTab.value = 'schedule'; });
 
+                const settingsBusy = ref(false);
+                const newCourtName = ref('');
+                function addCourt() {
+                    if (!isAdmin.value || settingsBusy.value) return;
+                    const name = newCourtName.value.trim();
+                    if (!name || name.length > 60 || Object.values(settingsForm.value.courts).filter(c => !c.removed).length >= 24) {
+                        triggerToast('Preverite ime', 'Vpišite ime do 60 znakov. Največ 24 igrišč.', 'error'); return;
+                    }
+                    const id = 'court_' + crypto.randomUUID().replaceAll('-', '');
+                    settingsForm.value.courts[id] = { name, active: true, removed: false };
+                    newCourtName.value = '';
+                }
+                async function removeCourt(id) {
+                    if (!isAdmin.value || settingsBusy.value) return;
+                    if (Object.values(settingsForm.value.courts).filter(c => !c.removed).length <= 1) {
+                        triggerToast('Zadnje igrišče', 'Ohranite vsaj eno igrišče.', 'error'); return;
+                    }
+                    const future = bookings.value.filter(b => b.courtId === id && b.date >= getTodayString()).length;
+                    if (await askConfirm({ title: 'Odstrani igrišče?', text: 'Igrišče bo po shranjevanju umaknjeno iz urnika. Rezervacije ostanejo v zgodovini in jih lahko prekličete v pregledu rezervacij. Prihodnje/današnje rezervacije: ' + future, okLabel: 'Odstrani' })) {
+                        settingsForm.value.courts[id].removed = true;
+                        settingsForm.value.courts[id].active = false;
+                    }
+                }
+                watch(courts, list => { if (!list.some(c => c.id === courtFilter.value)) courtFilter.value = 'all'; });
                 async function saveSettings() {
+                    if (!isAdmin.value || settingsBusy.value) return;
                     const f = settingsForm.value;
                     const ok = [f.openHour, f.closeHour, f.dailyLimit, f.weeklyLimit].every(Number.isInteger);
-                    if (!ok || f.openHour < 0 || f.closeHour > 24 || f.openHour >= f.closeHour || f.dailyLimit < 1 || f.weeklyLimit < 1) {
+                    if (!ok || f.openHour < 0 || f.closeHour > 24 || f.openHour >= f.closeHour || f.dailyLimit < 1 || f.dailyLimit > 24 || f.weeklyLimit < f.dailyLimit || f.weeklyLimit > 168) {
                         triggerToast('Napačne vrednosti', 'Preverite ure obratovanja in kvote.', 'error'); return;
                     }
                     if (f.seasonStart && f.seasonEnd && f.seasonStart > f.seasonEnd) {
                         triggerToast('Napačna sezona', 'Začetek sezone mora biti pred koncem.', 'error'); return;
                     }
+                    const catalog = Object.entries(f.courts);
+                    if (!catalog.some(([,c]) => !c.removed) || catalog.filter(([,c]) => !c.removed).length > 24 || catalog.some(([id,c]) => !/^[a-zA-Z0-9_-]{1,64}$/.test(id) || !c.name?.trim() || c.name.trim().length > 60)) {
+                        triggerToast('Preverite igrišča', 'Potrebno je 1–24 igrišč z imeni do 60 znakov.', 'error'); return;
+                    }
+                    if (new Set(catalog.filter(([,c]) => !c.removed).map(([,c]) => c.name.trim().toLocaleLowerCase('sl'))).size !== catalog.filter(([,c]) => !c.removed).length) {
+                        triggerToast('Podvojeno ime', 'Vsako igrišče mora imeti svoje ime.', 'error'); return;
+                    }
+                    settingsBusy.value = true;
                     try {
                         await setDoc(doc(db, 'settings', 'main'), {
                             openHour: f.openHour, closeHour: f.closeHour, dailyLimit: f.dailyLimit, weeklyLimit: f.weeklyLimit,
                             seasonStart: f.seasonStart || '', seasonEnd: f.seasonEnd || '', notice: (f.notice || '').trim(),
-                            courts: { court1: { active: !!f.courts.court1 }, court2: { active: !!f.courts.court2 } }
+                            courts: Object.fromEntries(catalog.map(([id,c]) => [id, { name: c.name.trim(), active: !!c.active && !c.removed, removed: !!c.removed }]))
                         });
                         triggerToast('Shranjeno', 'Nastavitve so posodobljene.', 'success');
-                    } catch (e) { console.error(e); triggerToast('Napaka', 'Shranjevanje ni uspelo. Preverite Firestore pravila.', 'error'); }
+                    } catch (e) { console.error(e); triggerToast('Napaka', 'Shranjevanje ni uspelo. Preverite Firestore pravila.', 'error'); } finally { settingsBusy.value = false; }
                 }
 
                 const closureForm = ref({ courtId: 'all', date: getTodayString(), dateTo: '', fromHour: 6, toHour: 22, note: '' });
                 const sortedClosures = computed(() => [...closures.value].sort((a, b) => a.date.localeCompare(b.date)));
                 async function addClosure() {
+                    if (!isAdmin.value) return;
                     const f = closureForm.value;
                     const validDate = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
                         && !!parseDateText(value.split('-').reverse().join('.'));
                     if (!validDate(f.date) || (f.dateTo && !validDate(f.dateTo))
-                        || !['all', ...COURTS.map(c => c.id)].includes(f.courtId)
+                        || !['all', ...courts.value.map(c => c.id)].includes(f.courtId)
                         || !Number.isInteger(f.fromHour) || !Number.isInteger(f.toHour)
                         || f.fromHour < 0 || f.toHour > 24 || f.fromHour >= f.toHour
                         || (f.dateTo && f.dateTo < f.date)) {
@@ -1786,16 +1833,18 @@
                     } catch (e) { console.error(e); triggerToast('Napaka', 'Dodajanje ni uspelo.', 'error'); }
                 }
                 async function removeClosure(id) {
+                    if (!isAdmin.value) return;
                     try { await deleteDoc(doc(db, 'closures', id)); triggerToast('Zaprtje odstranjeno', '', 'info'); }
                     catch (e) { triggerToast('Napaka', 'Brisanje ni uspelo.', 'error'); }
                 }
 
                 const manualForm = ref({ courtId: 'court1', date: getTodayString(), hour: 18, name: '' });
                 async function addManualBooking() {
+                    if (!isAdmin.value) return;
                     const f = manualForm.value;
                     if (!f.date || !parseDateText(f.date.split('-').reverse().join('.')) || !Number.isInteger(f.hour)
                         || f.hour < settings.value.openHour || f.hour >= settings.value.closeHour
-                        || !COURTS.some(c => c.id === f.courtId) || !courtIsActive(f.courtId, f.date)) {
+                        || !courts.value.some(c => c.id === f.courtId) || !courtIsActive(f.courtId, f.date)) {
                         triggerToast('Napačni podatki', 'Preverite igrišče, datum in uro obratovanja.', 'error'); return;
                     }
                     const id = `${f.courtId}_${f.date}_${f.hour}`;
@@ -1870,7 +1919,7 @@
                 });
 
                 const visibleCourts = computed(() =>
-                    courtFilter.value === 'all' ? COURTS : COURTS.filter(c => c.id === courtFilter.value)
+                    courtFilter.value === 'all' ? courts.value : courts.value.filter(c => c.id === courtFilter.value)
                 );
 
                 // Generate 1-hour slots from 06:00 to 22:00
@@ -1932,7 +1981,7 @@
                         const date = addDaysStr(weekBounds.value.start, i);
                         const [, monthNum, dayNum] = date.split('-').map(Number);
 
-                        const courts = COURTS.map(c => {
+                        const courts = courts.value.map(c => {
                             let free = 0;
                             const cells = [];
                             for (let hour = settings.value.openHour; hour < settings.value.closeHour; hour++) {
@@ -2197,14 +2246,14 @@
                 }
 
                 async function confirmBooking() {
-                    if (!currentUser.value || !targetSlot.value) return;
+                    if (!currentUser.value || !targetSlot.value || !bookingsLoaded.value || needsGuestName.value) return;
 
                     const courtId = targetCourt.value;
                     const bookingDate = selectedDate.value;
                     const slot = targetSlot.value;
                     const hour = slot.startHour;
                     const { todayStr, hour: currentHour } = getNowInfo();
-                    if (!COURTS.some(c => c.id === courtId) || !Number.isInteger(hour)
+                    if (!courts.value.some(c => c.id === courtId) || !Number.isInteger(hour)
                         || hour < settings.value.openHour || hour >= settings.value.closeHour
                         || !courtIsActive(courtId, bookingDate)
                         || bookingDate < todayStr || (bookingDate === todayStr && hour <= currentHour)) {
@@ -2237,13 +2286,13 @@
                             if (existing.exists()) throw new Error('slot-taken');
                             transaction.set(docRef, {
                                 courtId, date: bookingDate, startHour: hour, timeSlot: slot.label,
-                                userId: currentUser.value.uid, userName: (bookingUserName.value || '').trim().slice(0, 80) || 'Gost',
+                                userId: currentUser.value.uid, userName: (bookingUserName.value || userName.value || '').trim().slice(0, 80) || 'Gost',
                                 createdAt: new Date().toISOString()
                             });
                         });
 
-                        await logSessionActivity(`Rezerviral ${courtId === 'court1' ? 'Igrišče 1' : 'Igrišče 2'} za ${bookingDate} ob ${slot.label}.`);
-                        triggerToast('Uspešna rezervacija!', `Rezervirali ste ${courtId === 'court1' ? 'Igrišče 1' : 'Igrišče 2'} ob ${slot.label}`, 'success');
+                        await logSessionActivity(`Rezerviral ${courtName(courtId)} za ${bookingDate} ob ${slot.label}.`);
+                        triggerToast('Uspešna rezervacija!', `Rezervirali ste ${courtName(courtId)} ob ${slot.label}`, 'success');
                         showBookingModal.value = false;
                     } catch (e) {
                         console.error("Napaka pri rezervaciji:", e);
@@ -2257,12 +2306,23 @@
                 }
 
                 function promptCancelBooking(booking) {
+                    if (!currentUser.value || !booking) return;
+                    if (!isAdmin.value && (booking.userId !== currentUser.value.uid || !canCancelOwnBooking(booking))) {
+                        triggerToast('Preklic ni dovoljen', 'Začete in pretekle termine lahko briše samo skrbnik.', 'error');
+                        return;
+                    }
                     targetBookingToCancel.value = booking;
                     showCancelModal.value = true;
                 }
 
+                function canCancelOwnBooking(booking) {
+                    const { todayStr, hour } = venueTime();
+                    return typeof booking.date === 'string' && Number.isInteger(booking.startHour)
+                        && (booking.date > todayStr || (booking.date === todayStr && booking.startHour > hour));
+                }
+
                 async function confirmCancelBooking() {
-                    if (!targetBookingToCancel.value) return;
+                    if (!currentUser.value || !targetBookingToCancel.value) return;
 
                     try {
                         const docRef = doc(db, 'bookings', targetBookingToCancel.value.id);
@@ -2272,6 +2332,7 @@
                             const data = current.data();
                             const ownsBooking = data.userId === currentUser.value?.uid;
                             if (!isAdmin.value && !ownsBooking) throw new Error('booking-changed');
+                            if (!isAdmin.value && !canCancelOwnBooking(data)) throw new Error('booking-started');
                             if (data.createdAt !== targetBookingToCancel.value.createdAt || data.userId !== targetBookingToCancel.value.userId) {
                                 throw new Error('booking-changed');
                             }
@@ -2279,13 +2340,15 @@
                         });
 
                         const cancelled = targetBookingToCancel.value;
-                        await logSessionActivity(`${isAdmin.value && cancelled?.userId !== currentUser.value?.uid ? 'Skrbniško izbrisal' : 'Preklical'} rezervacijo ${cancelled?.courtId === 'court1' ? 'Igrišče 1' : 'Igrišče 2'} za ${cancelled?.date || ''} ob ${cancelled?.timeSlot || ''}.`);
+                        await logSessionActivity(`${isAdmin.value && cancelled?.userId !== currentUser.value?.uid ? 'Skrbniško izbrisal' : 'Preklical'} rezervacijo ${courtName(cancelled?.courtId)} za ${cancelled?.date || ''} ob ${cancelled?.timeSlot || ''}.`);
                         triggerToast('Rezervacija preklicana', 'Termin je sedaj sproščen za ostale igralce.', 'info');
                         showCancelModal.value = false;
                         targetBookingToCancel.value = null;
                     } catch (e) {
                         console.error("Napaka pri preklicu:", e);
-                        triggerToast('Napaka', e.message === 'booking-changed' || e.message === 'booking-missing'
+                        triggerToast('Napaka', e.message === 'booking-started'
+                            ? 'Termin se je že začel ali je pretekel. Izbriše ga lahko samo skrbnik.'
+                            : e.message === 'booking-changed' || e.message === 'booking-missing'
                             ? 'Rezervacija se je medtem spremenila. Osvežite urnik.' : 'Preklic rezervacije ni uspel.', 'error');
                     }
                 }
@@ -2459,7 +2522,7 @@
                 }
 
                 return {
-                    isAdmin, courts, pad, courtName, settings, closures, statusBanner, courtIsActive,
+                    isAdmin, courts, newCourtName, addCourt, removeCourt, settingsBusy, pad, courtName, settings, closures, statusBanner, courtIsActive,
                     openHoursText, openHoursRange, settingsForm, saveSettings, closureForm, sortedClosures, addClosure, removeClosure,
                     manualForm, addManualBooking, adminDate, adminSearch, adminOnlyFuture, adminBookings,
                     presenceList, onlineCount, fmtTs, removePresence,
