@@ -288,8 +288,9 @@
                     </div>
 
                     <!-- Quick Quota / Info Cards -->
-                    <div class="grid grid-cols-2 gap-3 text-xs w-full" data-info-cards>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs w-full max-w-4xl" data-info-cards>
                         <div class="col-span-2 min-w-0 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
+                            <span class="text-slate-400 font-medium mb-3">Igrišča</span>
                             <div class="space-y-3" aria-label="Igrišča po podlagah">
                                 <div v-for="group in surfaceGroups" :key="group.id" class="flex items-center gap-3 text-sm font-bold text-court-highlight" :data-surface="group.id">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" width="36" height="24" style="flex:0 0 36px;display:block" aria-hidden="true" focusable="false">
