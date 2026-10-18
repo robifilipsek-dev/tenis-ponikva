@@ -290,10 +290,10 @@
                     <!-- Quick Quota / Info Cards -->
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs w-full md:w-auto" data-info-cards>
                         <div class="col-span-2 sm:col-span-1 min-w-0 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
-                            <span class="text-slate-400 font-medium">Igrišča</span>
-                            <span class="text-sm font-bold text-court-highlight flex items-center gap-1.5 mt-0.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" width="36" height="24" style="flex:0 0 36px;display:block" aria-hidden="true" focusable="false">
-                                    <rect width="48" height="32" rx="4" fill="#b94f35"/>
+                            <div class="space-y-3" aria-label="Igrišča po podlagah">
+                                <div v-for="group in surfaceGroups" :key="group.id" class="flex items-center gap-3 text-sm font-bold text-court-highlight" :data-surface="group.id">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" width="36" height="24" style="flex:0 0 36px;display:block" aria-hidden="true" focusable="false">
+                                    <rect width="48" height="32" rx="4" :fill="group.color"/>
                                     <g fill="none" stroke="#fff8ed" stroke-width="1.2" stroke-linejoin="round">
                                         <path d="M5 5H43V27H5ZM5 8H43M5 24H43M15 8V24M33 8V24M15 16H33"/>
                                         <path d="M4 16H6M42 16H44"/>
@@ -303,9 +303,9 @@
                                     <circle cx="24" cy="3" r="1.4" fill="#fff8ed"/>
                                     <circle cx="24" cy="29" r="1.4" fill="#fff8ed"/>
                                 </svg>
-                                {{ courts.length }} {{ courts.length === 1 ? 'igrišče' : courts.length === 2 ? 'igrišči' : courts.length < 5 ? 'igrišča' : 'igrišč' }}
-                            </span>
-                            <span class="text-[11px] text-slate-300 mt-1">{{ surfaceSummary }}</span>
+                                    <span class="min-w-0">{{ group.count }} {{ courtCountLabel(group.count) }} {{ group.phrase }}</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
                             <span class="text-slate-400 font-medium">Dnevna kvota</span>
@@ -743,11 +743,15 @@
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-shoe-prints text-clay-600 mt-0.5"></i>
-                                <span><strong>Oprema:</strong> Na peščenih igriščih je obvezna uporaba ustreznih tenis copat z gladkim podplatom.</span>
+                                <span><strong>Oprema:</strong> Uporabljajte čiste teniške copate, primerne za izbrano podlago in skladne z navodili upravljavca. V dvorani uporabljajte obutev, ki ne pušča sledi.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-broom text-clay-600 mt-0.5"></i>
-                                <span><strong>Urejanje igrišča:</strong> Po končani igri je obvezno potegniti mrežo za poravnavo peska in po potrebi očistiti črte.</span>
+                                <span><strong>Po uporabi:</strong> Pospravite žogice, odpadke in osebne stvari ter opremo vrnite na mesto. Urejanje zaključite do konca rezerviranega termina. Poškodbe sporočite upravljavcu.</span>
+                            </li>
+                            <li v-for="group in surfaceGroups" :key="group.id" class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-circle-info mt-0.5" :style="{ color: group.color }"></i>
+                                <span><strong>{{ group.label }}:</strong> {{ surfaceCare[group.id] }}</span>
                             </li>
                         </ul>
                     </div>
@@ -1417,7 +1421,7 @@
                     return userSessions.value.filter(s => s.uid === id).sort((a,b) => (b.startedAtMs || 0) - (a.startedAtMs || 0)).slice(0, 50);
                 });
                 const surfaceOptions = [
-                    { id: 'clay', label: 'Peščena podlaga (rdeči pesek)' },
+                    { id: 'clay', label: 'Peščena podlaga' },
                     { id: 'hard', label: 'Trda podlaga' },
                     { id: 'grass', label: 'Travnata podlaga' },
                     { id: 'indoor', label: 'Dvoransko igrišče' },
@@ -1431,7 +1435,24 @@
                         name: c.name || COURTS.find(x => x.id === id)?.name || id }))
                     .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id)));
                 const courts = computed(() => allCourts.value.filter(c => !c.removed).map((c,i) => ({ ...c, n: i + 1 })));
-                const surfaceSummary = computed(() => surfaceOptions.filter(s => courts.value.some(c => c.surface === s.id)).map(s => s.label).join(' · '));
+                const surfaceAppearance = {
+                    clay: { color: '#b94f35', phrase: 's peščeno podlago' },
+                    hard: { color: '#2563b8', phrase: 's trdo podlago' },
+                    grass: { color: '#43852e', phrase: 's travnato podlago' },
+                    indoor: { color: '#8056b3', phrase: 'v dvorani' },
+                    artificial: { color: '#16877d', phrase: 'z umetno travo' },
+                    other: { color: '#64748b', phrase: 'z drugo podlago' }
+                };
+                const courtCountLabel = n => n % 100 === 1 ? 'igrišče' : n % 100 === 2 ? 'igrišči' : [3,4].includes(n % 100) ? 'igrišča' : 'igrišč';
+                const surfaceGroups = computed(() => surfaceOptions.map(s => ({ ...s, ...surfaceAppearance[s.id], count: courts.value.filter(c => c.surface === s.id).length })).filter(s => s.count > 0));
+                const surfaceCare = {
+                    clay: 'Po igri poravnajte podlago z namensko vlečno mrežo in očistite črte. Mrežo vrnite na mesto. Zalivajte samo po navodilih upravljavca; razmočene podlage ne urejajte in je ne uporabljajte.',
+                    hard: 'Pospravite igrišče in odstranite drobne odpadke z ustreznim pripomočkom. Podlage ne poravnavajte z mrežo za pesek. Čiščenje madežev in odstranjevanje vode prepustite upravljavcu oziroma sledite njegovim navodilom.',
+                    grass: 'Pospravite igrišče, ne vlecite mreže za pesek in ne posegajte v travno rušo. Poškodbe ruše prijavite upravljavcu. Košnjo, valjanje in obnovo izvaja vzdrževalec.',
+                    indoor: 'Uporabljajte čiste copate, ki ne puščajo sledi, in pospravite igrišče. Način čiščenja je odvisen od dejanske podlage v dvorani; uporabljajte samo pripomočke, ki jih določi upravljavec.',
+                    artificial: 'Odstranite odpadke. Če upravljavec zahteva krtačenje po igri, uporabite namensko krtačo in predpisano smer krtačenja. Polnila ne dodajajte ali odstranjujte sami; ne uporabljajte mreže za pesek, če za to podlago ni odobrena.',
+                    other: 'Igrišče pospravite in pri čiščenju ter urejanju upoštevajte navodila upravljavca za konkretno podlago. Brez navodil ne uporabljajte vlečne mreže, vode ali čistil.'
+                };
                 const pad = pad2;
                 const courtName = (id) => (allCourts.value.find(c => c.id === id) || { name: id }).name;
 
@@ -2554,7 +2575,7 @@
                 }
 
                 return {
-                    isAdmin, courts, surfaceOptions, surfaceLabel, surfaceSummary, orderedFormCourts, moveCourt, newCourtName, addCourt, removeCourt, settingsBusy, pad, courtName, settings, closures, statusBanner, courtIsActive,
+                    isAdmin, courts, surfaceOptions, surfaceLabel, surfaceGroups, courtCountLabel, surfaceCare, orderedFormCourts, moveCourt, newCourtName, addCourt, removeCourt, settingsBusy, pad, courtName, settings, closures, statusBanner, courtIsActive,
                     openHoursText, openHoursRange, settingsForm, saveSettings, closureForm, sortedClosures, addClosure, removeClosure,
                     manualForm, addManualBooking, adminDate, adminSearch, adminOnlyFuture, adminBookings,
                     presenceList, onlineCount, fmtTs, removePresence,
