@@ -288,8 +288,8 @@
                     </div>
 
                     <!-- Quick Quota / Info Cards -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                        <div class="bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs w-full md:w-auto" data-info-cards>
+                        <div class="col-span-2 sm:col-span-1 min-w-0 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
                             <span class="text-slate-400 font-medium">Igrišča</span>
                             <span class="text-sm font-bold text-court-highlight flex items-center gap-1.5 mt-0.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" width="36" height="24" style="flex:0 0 36px;display:block" aria-hidden="true" focusable="false">
@@ -303,8 +303,9 @@
                                     <circle cx="24" cy="3" r="1.4" fill="#fff8ed"/>
                                     <circle cx="24" cy="29" r="1.4" fill="#fff8ed"/>
                                 </svg>
-                                {{ courts.length }} {{ courts.length === 1 ? 'peščeno igrišče' : courts.length === 2 ? 'peščeni igrišči' : courts.length < 5 ? 'peščena igrišča' : 'peščenih igrišč' }}
+                                {{ courts.length }} {{ courts.length === 1 ? 'igrišče' : courts.length === 2 ? 'igrišči' : courts.length < 5 ? 'igrišča' : 'igrišč' }}
                             </span>
+                            <span class="text-[11px] text-slate-300 mt-1">{{ surfaceSummary }}</span>
                         </div>
                         <div class="bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
                             <span class="text-slate-400 font-medium">Dnevna kvota</span>
@@ -312,7 +313,7 @@
                                 {{ todayUsage }} / {{ DAILY_LIMIT }} {{ hoursLabel(DAILY_LIMIT) }}
                             </span>
                         </div>
-                        <div class="col-span-2 sm:col-span-1 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
+                        <div class="min-w-0 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
                             <span class="text-slate-400 font-medium">Tedenska kvota</span>
                             <span class="text-sm font-bold mt-0.5" :class="weekUsage >= WEEKLY_LIMIT ? 'text-amber-400' : 'text-emerald-300'">
                                 {{ weekUsage }} / {{ WEEKLY_LIMIT }} {{ hoursLabel(WEEKLY_LIMIT) }}
@@ -483,7 +484,7 @@
                                 </div>
                                 <div>
                                     <h2 class="font-display font-bold text-base sm:text-lg">{{ court.name }}</h2>
-                                    <p class="text-xs text-court-lime/90 font-medium">Peščena podlaga (Rdeči pesek)</p>
+                                    <p class="text-xs text-court-lime/90 font-medium">{{ surfaceLabel(court.surface) }}</p>
                                 </div>
                             </div>
                             <span v-if="courtIsActive(court.id, selectedDate)" class="text-xs bg-emerald-900/60 border border-emerald-400/30 text-emerald-300 font-semibold px-2.5 py-1 rounded-full">
@@ -649,7 +650,8 @@
 
                             <!-- Court rows -->
                             <button v-for="c in day.courts" :key="c.id" @click="openDay(day.date, c.id)"
-                                    class="w-full flex items-center gap-2 py-0.5 rounded-lg hover:bg-slate-50 transition" :title="c.name">
+                                    class="w-full flex flex-wrap items-center gap-2 py-1 rounded-lg hover:bg-slate-50 transition" :title="c.name + ' · ' + surfaceLabel(c.surface)">
+                                <span class="w-full text-left text-[11px] text-slate-500">{{ c.name }} · {{ surfaceLabel(c.surface) }}</span>
                                 <span class="w-5 h-5 rounded-md bg-clay-600 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">{{ c.n }}</span>
                                 <span class="flex-1 flex gap-px">
                                     <span v-for="cell in c.cells" :key="cell.hour" :title="cell.title"
@@ -791,16 +793,18 @@
                 <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
                     <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2"><i class="fa-solid fa-sliders text-court-green"></i> Stanje igrišč in obratovanje</h2>
                     <div class="grid sm:grid-cols-2 gap-3">
-                        <template v-for="(c,id) in settingsForm.courts" :key="id">
+                        <template v-for="(c,index) in orderedFormCourts" :key="c.id">
                             <div v-if="!c.removed" class="p-3 rounded-xl border border-slate-200 space-y-2 min-w-0">
                                 <label class="block text-xs font-semibold">Ime igrišča<input v-model="c.name" maxlength="60" class="mt-1 w-full border rounded-lg p-2" :disabled="settingsBusy"></label>
+                                <label class="block text-xs font-semibold">Podlaga / vrsta igrišča<select v-model="c.surface" class="mt-1 w-full border rounded-lg p-2" :disabled="settingsBusy"><option v-for="s in surfaceOptions" :key="s.id" :value="s.id">{{ s.label }}</option></select></label>
+                                <div class="flex items-center gap-2 text-xs"><span>{{ index + 1 }}. mesto</span><button @click="moveCourt(c.id,-1)" :disabled="settingsBusy || index === 0" aria-label="Premakni igrišče višje" class="border rounded-lg px-3 py-1">↑</button><button @click="moveCourt(c.id,1)" :disabled="settingsBusy || index === orderedFormCourts.length - 1" aria-label="Premakni igrišče nižje" class="border rounded-lg px-3 py-1">↓</button></div>
                                 <div class="flex items-center justify-between gap-2"><label class="text-xs flex items-center gap-2"><input type="checkbox" v-model="c.active" :disabled="settingsBusy" class="w-5 h-5"> Aktivno</label>
-                                <button @click="removeCourt(id)" :disabled="settingsBusy" class="text-red-700 text-xs p-2">Odstrani</button></div>
+                                <button @click="removeCourt(c.id)" :disabled="settingsBusy" class="text-red-700 text-xs p-2">Odstrani</button></div>
                             </div>
                         </template>
                     </div>
                     <div class="flex flex-wrap gap-2"><input aria-label="Ime novega igrišča" v-model="newCourtName" maxlength="60" placeholder="Ime novega igrišča" class="border rounded-lg px-3 py-2 min-w-0 flex-1" @keyup.enter="addCourt"><button @click="addCourt" :disabled="settingsBusy" class="rounded-lg bg-slate-100 px-4 py-2 text-sm">Dodaj igrišče</button></div>
-                    <p class="text-xs text-slate-500">Spremembe igrišč potrdite z gumbom Shrani nastavitve. Odstranitev ohrani zgodovino rezervacij.</p>
+                    <p class="text-xs text-slate-500">Podlago in vrstni red potrdite z gumbom Shrani nastavitve. Vrstni red določa številke v pregledih, rezervacije pa ostanejo vezane na isto igrišče. Odstranitev ohrani zgodovino.</p>
                     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-semibold text-slate-600">
                         <label>Začetek sezone<input type="date" v-model="settingsForm.seasonStart" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                         <label>Konec sezone<input type="date" v-model="settingsForm.seasonEnd" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
@@ -1412,8 +1416,22 @@
                     if (!id) return [];
                     return userSessions.value.filter(s => s.uid === id).sort((a,b) => (b.startedAtMs || 0) - (a.startedAtMs || 0)).slice(0, 50);
                 });
-                const allCourts = computed(() => Object.entries(settings.value.courts).map(([id, c], i) => ({ id, n: i + 1, name: c.name || COURTS.find(x => x.id === id)?.name || id, ...c })));
-                const courts = computed(() => allCourts.value.filter(c => !c.removed));
+                const surfaceOptions = [
+                    { id: 'clay', label: 'Peščena podlaga (rdeči pesek)' },
+                    { id: 'hard', label: 'Trda podlaga' },
+                    { id: 'grass', label: 'Travnata podlaga' },
+                    { id: 'indoor', label: 'Dvoransko igrišče' },
+                    { id: 'artificial', label: 'Umetna trava' },
+                    { id: 'other', label: 'Druga podlaga' }
+                ];
+                const surfaceLabel = id => surfaceOptions.find(s => s.id === id)?.label || surfaceOptions[0].label;
+                const allCourts = computed(() => Object.entries(settings.value.courts)
+                    .map(([id, c], i) => ({ ...c, id, order: Number.isInteger(c.order) ? c.order : i,
+                        surface: surfaceOptions.some(s => s.id === c.surface) ? c.surface : 'clay',
+                        name: c.name || COURTS.find(x => x.id === id)?.name || id }))
+                    .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id)));
+                const courts = computed(() => allCourts.value.filter(c => !c.removed).map((c,i) => ({ ...c, n: i + 1 })));
+                const surfaceSummary = computed(() => surfaceOptions.filter(s => courts.value.some(c => c.surface === s.id)).map(s => s.label).join(' · '));
                 const pad = pad2;
                 const courtName = (id) => (allCourts.value.find(c => c.id === id) || { name: id }).name;
 
@@ -1750,7 +1768,7 @@
                 function loadSettingsForm() {
                     const s = settings.value;
                     settingsForm.value = {
-                        courts: Object.fromEntries(Object.entries(s.courts).map(([id,c]) => [id, { ...c, name: c.name || courtName(id) }])),
+                        courts: Object.fromEntries(allCourts.value.map(c => [c.id, { ...c }])),
                         openHour: s.openHour, closeHour: s.closeHour, dailyLimit: s.dailyLimit, weeklyLimit: s.weeklyLimit,
                         seasonStart: s.seasonStart || '', seasonEnd: s.seasonEnd || '', notice: s.notice || ''
                     };
@@ -1760,6 +1778,16 @@
 
                 const settingsBusy = ref(false);
                 const newCourtName = ref('');
+                const orderedFormCourts = computed(() => Object.values(settingsForm.value.courts).filter(c => !c.removed)
+                    .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id)));
+                function moveCourt(id, direction) {
+                    if (!isAdmin.value || settingsBusy.value) return;
+                    const list = [...orderedFormCourts.value];
+                    const index = list.findIndex(c => c.id === id), target = index + direction;
+                    if (index < 0 || target < 0 || target >= list.length || ![-1,1].includes(direction)) return;
+                    [list[index], list[target]] = [list[target], list[index]];
+                    list.forEach((c,i) => { c.order = i; });
+                }
                 function addCourt() {
                     if (!isAdmin.value || settingsBusy.value) return;
                     const name = newCourtName.value.trim();
@@ -1767,7 +1795,8 @@
                         triggerToast('Preverite ime', 'Vpišite ime do 60 znakov. Največ 24 igrišč.', 'error'); return;
                     }
                     const id = 'court_' + crypto.randomUUID().replaceAll('-', '');
-                    settingsForm.value.courts[id] = { name, active: true, removed: false };
+                    const order = Math.max(-1, ...Object.values(settingsForm.value.courts).map(c => c.order || 0)) + 1;
+                    settingsForm.value.courts[id] = { id, name, surface: 'clay', order, active: true, removed: false };
                     newCourtName.value = '';
                 }
                 async function removeCourt(id) {
@@ -1793,6 +1822,9 @@
                         triggerToast('Napačna sezona', 'Začetek sezone mora biti pred koncem.', 'error'); return;
                     }
                     const catalog = Object.entries(f.courts);
+                    if (catalog.some(([,c]) => !surfaceOptions.some(s => s.id === c.surface) || !Number.isInteger(c.order) || c.order < 0)) {
+                        triggerToast('Preverite igrišča', 'Izberite veljavno podlago in vrstni red.', 'error'); return;
+                    }
                     if (!catalog.some(([,c]) => !c.removed) || catalog.filter(([,c]) => !c.removed).length > 24 || catalog.some(([id,c]) => !/^[a-zA-Z0-9_-]{1,64}$/.test(id) || !c.name?.trim() || c.name.trim().length > 60)) {
                         triggerToast('Preverite igrišča', 'Potrebno je 1–24 igrišč z imeni do 60 znakov.', 'error'); return;
                     }
@@ -1804,7 +1836,7 @@
                         await setDoc(doc(db, 'settings', 'main'), {
                             openHour: f.openHour, closeHour: f.closeHour, dailyLimit: f.dailyLimit, weeklyLimit: f.weeklyLimit,
                             seasonStart: f.seasonStart || '', seasonEnd: f.seasonEnd || '', notice: (f.notice || '').trim(),
-                            courts: Object.fromEntries(catalog.map(([id,c]) => [id, { name: c.name.trim(), active: !!c.active && !c.removed, removed: !!c.removed }]))
+                            courts: Object.fromEntries(catalog.map(([id,c]) => [id, { name: c.name.trim(), surface: c.surface, order: c.order, active: !!c.active && !c.removed, removed: !!c.removed }]))
                         });
                         triggerToast('Shranjeno', 'Nastavitve so posodobljene.', 'success');
                     } catch (e) { console.error(e); triggerToast('Napaka', 'Shranjevanje ni uspelo. Preverite Firestore pravila.', 'error'); } finally { settingsBusy.value = false; }
@@ -1999,7 +2031,7 @@
                                     : status === 'past' ? 'Potekel' : status === 'closed' ? 'Zaprt' : 'Prosto';
                                 cells.push({ hour, status, title: `${pad2(hour)}:00 – ${pad2(hour + 1)}:00 · ${statusText}` });
                             }
-                            return { id: c.id, n: c.n, name: c.name, cells, free };
+                            return { id: c.id, n: c.n, name: c.name, surface: c.surface, cells, free };
                         });
 
                         days.push({
@@ -2522,7 +2554,7 @@
                 }
 
                 return {
-                    isAdmin, courts, newCourtName, addCourt, removeCourt, settingsBusy, pad, courtName, settings, closures, statusBanner, courtIsActive,
+                    isAdmin, courts, surfaceOptions, surfaceLabel, surfaceSummary, orderedFormCourts, moveCourt, newCourtName, addCourt, removeCourt, settingsBusy, pad, courtName, settings, closures, statusBanner, courtIsActive,
                     openHoursText, openHoursRange, settingsForm, saveSettings, closureForm, sortedClosures, addClosure, removeClosure,
                     manualForm, addManualBooking, adminDate, adminSearch, adminOnlyFuture, adminBookings,
                     presenceList, onlineCount, fmtTs, removePresence,
