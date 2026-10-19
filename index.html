@@ -13,102 +13,11 @@
     <meta name="apple-mobile-web-app-title" content="Tenis Ponikva">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- PWA: ikona (PNG, generirana s canvasom), manifest in zajem namestitvenega poziva -->
+    <!-- PWA: manifest, ikone in service worker so ločene datoteke ob index.html -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <script>
         (function () {
-            // Nariše ikono (koledar z teniško žogico) – ista podoba kot favicon
-            function rr(ctx, x, y, w, h, r) {
-                ctx.beginPath();
-                ctx.moveTo(x + r, y);
-                ctx.arcTo(x + w, y, x + w, y + h, r);
-                ctx.arcTo(x + w, y + h, x, y + h, r);
-                ctx.arcTo(x, y + h, x, y, r);
-                ctx.arcTo(x, y, x + w, y, r);
-                ctx.closePath();
-            }
-
-            function drawBallPng(size, maskable) {
-                var canvas = document.createElement('canvas');
-                canvas.width = size; canvas.height = size;
-                var ctx = canvas.getContext('2d');
-                ctx.scale(size / 64, size / 64);
-
-                ctx.fillStyle = '#f1ede4';
-                if (maskable) { ctx.fillRect(0, 0, 64, 64); } else { rr(ctx, 0, 0, 64, 64, 14); ctx.fill(); }
-
-                ctx.save();
-                if (maskable) { ctx.translate(32, 32); ctx.scale(0.78, 0.78); ctx.translate(-32, -32); }
-
-                rr(ctx, 11, 13, 42, 40, 5); ctx.fillStyle = '#ffffff'; ctx.fill();
-                rr(ctx, 11, 13, 42, 11, 5); ctx.fillStyle = '#1a4332'; ctx.fill();
-                ctx.fillRect(11, 19, 42, 5);
-                rr(ctx, 11, 13, 42, 40, 5); ctx.strokeStyle = '#0f291e'; ctx.lineWidth = 1.4; ctx.stroke();
-
-                ctx.fillStyle = '#0f291e';
-                rr(ctx, 19.5, 9, 3.4, 7.7, 1.7); ctx.fill();
-                rr(ctx, 41.1, 9, 3.4, 7.7, 1.7); ctx.fill();
-
-                ctx.fillStyle = '#cbd5e1';
-                [31.6, 39.3, 46.9].forEach(function (y) {
-                    [20, 28.2, 36.3, 44.4].forEach(function (x) {
-                        if (y === 39.3 && x === 36.3) return;
-                        ctx.beginPath(); ctx.arc(x, y, 1.7, 0, Math.PI * 2); ctx.fill();
-                    });
-                });
-
-                ctx.save();
-                ctx.translate(36.3, 39.3); ctx.scale(0.295, 0.295);
-                ctx.fillStyle = '#d4e83a';
-                ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.clip();
-                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-                ctx.stroke(new Path2D('M-20 -22Q8 0 -20 22'));
-                ctx.stroke(new Path2D('M20 -22Q-8 0 20 22'));
-                ctx.restore();
-
-                ctx.restore();
-                return canvas.toDataURL('image/png');
-            }
-
-            function setupPwa() {
-                try {
-                    var iconAny = drawBallPng(512, false);
-                    var iconMask = drawBallPng(512, true);
-
-                    var apple = document.querySelector('link[rel="apple-touch-icon"]');
-                    if (!apple) {
-                        apple = document.createElement('link');
-                        apple.rel = 'apple-touch-icon';
-                        document.head.appendChild(apple);
-                    }
-                    apple.href = drawBallPng(180, false);
-
-                    var manifest = {
-                        name: 'Tenis Ponikva – rezervacije',
-                        short_name: 'Tenis',
-                        start_url: location.href.split('#')[0],
-                        display: 'standalone',
-                        background_color: '#f1ede4',
-                        theme_color: '#0f291e',
-                        icons: [
-                            { src: iconAny, sizes: '512x512', type: 'image/png', purpose: 'any' },
-                            { src: iconMask, sizes: '512x512', type: 'image/png', purpose: 'maskable' }
-                        ]
-                    };
-                    var url = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/json' }));
-                    var link = document.querySelector('link[rel="manifest"]');
-                    if (!link) {
-                        link = document.createElement('link');
-                        link.rel = 'manifest';
-                        document.head.appendChild(link);
-                    }
-                    link.href = url;
-                } catch (e) {
-                    console.warn('PWA ikona/manifest ni bil ustvarjen:', e);
-                }
-            }
-            setupPwa();
-
             // Brskalnik lahko sproži poziv za namestitev, še preden se naloži Vue – zato ga shranimo tukaj
             window.__pwaPrompt = null;
             window.addEventListener('beforeinstallprompt', function (e) {
@@ -121,6 +30,11 @@
                 window.__pwaInstalled = true;
                 window.dispatchEvent(new Event('pwa-state-changed'));
             });
+            if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+                window.addEventListener('load', function () {
+                    navigator.serviceWorker.register('sw.js').catch(function (e) { console.warn('Service worker ni bil registriran:', e); });
+                });
+            }
         })();
     </script>
     
@@ -648,18 +562,38 @@
                             </button>
 
                             <!-- Court rows -->
-                            <button v-for="c in day.courts" :key="c.id" @click="openDay(day.date, c.id)"
-                                    class="w-full flex flex-wrap items-center gap-2 py-1 rounded-lg hover:bg-slate-50 transition" :title="c.name + ' · ' + surfaceLabel(c.surface)">
-                                <span class="w-full text-left text-[11px] text-slate-500">{{ c.name }} · {{ surfaceLabel(c.surface) }}</span>
+                            <div v-for="c in day.courts" :key="c.id" class="w-full flex flex-wrap items-center gap-2 py-1">
+                                <button @click="openDay(day.date, c.id)" class="w-full flex items-center justify-between text-left text-[11px] text-slate-600 hover:text-slate-900 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-court-green" :title="'Odpri urnik: ' + c.name">
+                                    <span>{{ c.name }} · {{ surfaceLabel(c.surface) }}</span>
+                                    <i class="fa-solid fa-chevron-right text-[9px] text-slate-400" aria-hidden="true"></i>
+                                </button>
                                 <span :style="{backgroundColor: surfaceColor(c.surface)}" class="w-5 h-5 rounded-md text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">{{ c.n }}</span>
                                 <span class="flex-1 min-w-0 grid gap-1" :style="{ gridTemplateColumns: 'repeat(' + Math.ceil(c.cells.length / 2) + ', minmax(0, 1fr))' }">
                                     <span v-for="cell in c.cells" :key="cell.hour" :title="cell.title"
-                                          class="flex-1 min-w-0 h-9 rounded-[3px] border flex flex-col items-center justify-center gap-px text-[9px] font-bold leading-[1.1] font-mono tracking-tighter select-none"
-                                          :class="[legendCls[cell.status], weekCellText[cell.status]]"><span>{{ cell.from }}</span><span class="block w-2 border-t border-current opacity-50"></span><span>{{ cell.to }}</span></span>
+                                          role="button" tabindex="0" :aria-label="cell.title" :aria-pressed="weekTip && weekTip.key === cell.key ? 'true' : 'false'"
+                                          @click="showWeekTip(day, c, cell)" @keydown.enter.prevent="showWeekTip(day, c, cell)" @keydown.space.prevent="showWeekTip(day, c, cell)"
+                                          class="flex-1 min-w-0 h-9 rounded-[3px] border flex flex-col items-center justify-center gap-px text-[9px] font-bold leading-[1.1] font-mono tracking-tighter select-none cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-court-green"
+                                          :class="[legendCls[cell.status], weekCellText[cell.status], weekTip && weekTip.key === cell.key ? 'ring-2 ring-offset-1 ring-slate-900' : '']"><span aria-hidden="true">{{ cell.from }}</span><span aria-hidden="true" class="block w-2 border-t border-current opacity-50"></span><span aria-hidden="true">{{ cell.to }}</span></span>
                                 </span>
-                                <span class="w-6 flex-shrink-0 text-right text-[11px] font-bold" :class="c.free === 0 ? 'text-slate-400' : 'text-emerald-700'">{{ c.free }}</span>
-                            </button>
+                                <span class="w-6 flex-shrink-0 text-right text-[11px] font-bold" :class="c.free === 0 ? 'text-slate-500' : 'text-emerald-700'">{{ c.free }}</span>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Podrobnosti tapnjene kocke -->
+                    <div v-if="weekTip" class="fixed inset-x-3 bottom-4 z-40 max-w-md mx-auto bg-slate-900 text-white rounded-2xl shadow-2xl p-4" role="status" aria-live="polite">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <div class="font-display font-bold text-base">{{ weekTip.from }} – {{ weekTip.to }} · {{ weekTip.dateLabel }}</div>
+                                <div class="text-xs text-slate-300 mt-0.5">{{ weekTip.courtName }}</div>
+                                <div class="mt-2 flex items-center gap-2 text-sm">
+                                    <span class="w-3.5 h-3.5 rounded border flex-shrink-0" :class="legendCls[weekTip.status]"></span>
+                                    <span class="break-words">{{ weekTip.statusText }}</span>
+                                </div>
+                            </div>
+                            <button @click="closeWeekTip" aria-label="Zapri" class="p-1.5 -m-1.5 text-slate-300 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <button @click="openDay(weekTip.date, weekTip.courtId)" class="mt-3 w-full px-4 py-2 rounded-xl bg-white text-slate-900 font-semibold text-sm hover:bg-slate-100 transition">Odpri urnik tega dne</button>
                     </div>
                 </template>
 
@@ -1322,17 +1256,17 @@
 
         // Barva številke ure v kockah tedenskega pregleda
         const weekCellText = {
-            free: 'text-emerald-800',
-            mine: 'text-white',
-            busy: 'text-white',
-            past: 'text-slate-400',
-            closed: 'text-slate-400'
+            free: 'text-emerald-900',
+            mine: 'text-slate-900',
+            busy: 'text-slate-900',
+            past: 'text-slate-500',
+            closed: 'text-slate-500'
         };
 
         const baseTabs = [
             { id: 'schedule', icon: 'fa-solid fa-calendar-day', short: 'Urnik', label: 'Urnik & Rezervacija' },
             { id: 'week', icon: 'fa-solid fa-calendar-week', short: 'Teden', label: 'Tedenski pregled' },
-            { id: 'myBookings', icon: 'fa-solid fa-clock-rotate-left', short: 'Moje', label: 'Moje rezervacije' },
+            { id: 'myBookings', icon: 'fa-solid fa-ticket', short: 'Moje', label: 'Moje rezervacije' },
             { id: 'info', icon: 'fa-solid fa-circle-info', short: 'Info', label: 'Pravila & Info' }
         ];
 
@@ -2114,7 +2048,7 @@
                                 const statusText = status === 'mine' ? 'Moja rezervacija'
                                     : status === 'busy' ? 'Zasedeno' + (b && b.userName ? ` (${b.userName})` : '')
                                     : status === 'past' ? 'Potekel' : status === 'closed' ? 'Zaprt' : 'Prosto';
-                                cells.push({ hour, from: `${pad2(hour)}:00`, to: `${pad2(hour + 1)}:00`, status, title: `${pad2(hour)}:00 – ${pad2(hour + 1)}:00 · ${statusText}` });
+                                cells.push({ hour, key: `${c.id}_${date}_${hour}`, from: `${pad2(hour)}:00`, to: `${pad2(hour + 1)}:00`, status, statusText, title: `${pad2(hour)}:00 – ${pad2(hour + 1)}:00 · ${statusText}` });
                             }
                             return { id: c.id, n: c.n, name: c.name, surface: c.surface, cells, free };
                         });
@@ -2132,16 +2066,31 @@
                     return days;
                 });
 
+                // Podrobnosti tapnjene kocke (ura, igrišče, kdo je rezerviral)
+                const weekTip = ref(null);
+                function showWeekTip(day, court, cell) {
+                    if (weekTip.value && weekTip.value.key === cell.key) { weekTip.value = null; return; }
+                    weekTip.value = {
+                        key: cell.key, date: day.date, dateLabel: `${day.dow} ${day.dayNum}. ${day.monthNum}.`,
+                        courtId: court.id, courtName: court.name, from: cell.from, to: cell.to,
+                        status: cell.status, statusText: cell.statusText
+                    };
+                }
+                function closeWeekTip() { weekTip.value = null; }
+
                 function changeWeek(n) {
                     weekAnchor.value = addDaysStr(weekAnchor.value, n * 7);
+                    weekTip.value = null;
                 }
 
                 function goThisWeek() {
                     weekAnchor.value = getTodayString();
+                    weekTip.value = null;
                 }
 
                 // Skok iz tedenskega pregleda na urnik izbranega dne (in igrišča)
                 function openDay(date, courtId) {
+                    weekTip.value = null;
                     selectedDate.value = date;
                     courtFilter.value = courtId || 'all';
                     activeTab.value = 'schedule';
@@ -2664,6 +2613,9 @@
                     weekRangeLabel,
                     isCurrentWeek,
                     changeWeek,
+                    weekTip,
+                    showWeekTip,
+                    closeWeekTip,
                     goThisWeek,
                     openDay,
                     todayUsage,
