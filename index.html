@@ -627,7 +627,7 @@
                 <!-- Days -->
                 <template v-else-if="currentUser">
                     <p class="text-[11px] text-slate-500 px-1">
-                        Vsaka kocka = 1 ura ({{ openHoursRange.replace(' - ', '–') }}). Številka desno = število prostih ur. Tapnite dan ali igrišče za odpiranje urnika.
+                        Vsaka kocka = 1 ura, v kocki sta začetek in konec ure (npr. 08:00 nad 09:00; {{ openHoursRange.replace(' - ', '–') }}). Številka desno = število prostih ur. Tapnite dan ali igrišče za odpiranje urnika.
                     </p>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -647,23 +647,15 @@
                                 </span>
                             </button>
 
-                            <!-- Hour ruler -->
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="w-5 flex-shrink-0"></span>
-                                <div class="relative flex-1 h-3 text-[9px] leading-3 text-slate-400 font-mono">
-                                    <span v-for="h in rulerHours" :key="h.hour" class="absolute top-0" :style="{ left: h.left, transform: h.shift }">{{ h.label }}</span>
-                                </div>
-                                <span class="w-6 flex-shrink-0"></span>
-                            </div>
-
                             <!-- Court rows -->
                             <button v-for="c in day.courts" :key="c.id" @click="openDay(day.date, c.id)"
                                     class="w-full flex flex-wrap items-center gap-2 py-1 rounded-lg hover:bg-slate-50 transition" :title="c.name + ' · ' + surfaceLabel(c.surface)">
                                 <span class="w-full text-left text-[11px] text-slate-500">{{ c.name }} · {{ surfaceLabel(c.surface) }}</span>
                                 <span :style="{backgroundColor: surfaceColor(c.surface)}" class="w-5 h-5 rounded-md text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">{{ c.n }}</span>
-                                <span class="flex-1 flex gap-px">
+                                <span class="flex-1 min-w-0 grid gap-1" :style="{ gridTemplateColumns: 'repeat(' + Math.ceil(c.cells.length / 2) + ', minmax(0, 1fr))' }">
                                     <span v-for="cell in c.cells" :key="cell.hour" :title="cell.title"
-                                          class="flex-1 h-6 rounded-[3px] border" :class="legendCls[cell.status]"></span>
+                                          class="flex-1 min-w-0 h-9 rounded-[3px] border flex flex-col items-center justify-center gap-px text-[9px] font-bold leading-[1.1] font-mono tracking-tighter select-none"
+                                          :class="[legendCls[cell.status], weekCellText[cell.status]]"><span>{{ cell.from }}</span><span class="block w-2 border-t border-current opacity-50"></span><span>{{ cell.to }}</span></span>
                                 </span>
                                 <span class="w-6 flex-shrink-0 text-right text-[11px] font-bold" :class="c.free === 0 ? 'text-slate-400' : 'text-emerald-700'">{{ c.free }}</span>
                             </button>
@@ -1328,9 +1320,18 @@
             closed: 'bg-slate-100 border-slate-300'
         };
 
+        // Barva številke ure v kockah tedenskega pregleda
+        const weekCellText = {
+            free: 'text-emerald-800',
+            mine: 'text-white',
+            busy: 'text-white',
+            past: 'text-slate-400',
+            closed: 'text-slate-400'
+        };
+
         const baseTabs = [
-            { id: 'schedule', icon: 'fa-solid fa-calendar-days', short: 'Urnik', label: 'Urnik & Rezervacija' },
-            { id: 'week', icon: 'fa-solid fa-table-cells', short: 'Teden', label: 'Tedenski pregled' },
+            { id: 'schedule', icon: 'fa-solid fa-calendar-day', short: 'Urnik', label: 'Urnik & Rezervacija' },
+            { id: 'week', icon: 'fa-solid fa-calendar-week', short: 'Teden', label: 'Tedenski pregled' },
             { id: 'myBookings', icon: 'fa-solid fa-clock-rotate-left', short: 'Moje', label: 'Moje rezervacije' },
             { id: 'info', icon: 'fa-solid fa-circle-info', short: 'Info', label: 'Pravila & Info' }
         ];
@@ -2113,7 +2114,7 @@
                                 const statusText = status === 'mine' ? 'Moja rezervacija'
                                     : status === 'busy' ? 'Zasedeno' + (b && b.userName ? ` (${b.userName})` : '')
                                     : status === 'past' ? 'Potekel' : status === 'closed' ? 'Zaprt' : 'Prosto';
-                                cells.push({ hour, status, title: `${pad2(hour)}:00 – ${pad2(hour + 1)}:00 · ${statusText}` });
+                                cells.push({ hour, from: `${pad2(hour)}:00`, to: `${pad2(hour + 1)}:00`, status, title: `${pad2(hour)}:00 – ${pad2(hour + 1)}:00 · ${statusText}` });
                             }
                             return { id: c.id, n: c.n, name: c.name, surface: c.surface, cells, free };
                         });
@@ -2656,6 +2657,7 @@
                     tabs,
                     legendItems,
                     legendCls,
+                    weekCellText,
                     rulerHours,
                     visibleCourts,
                     weekDays,
