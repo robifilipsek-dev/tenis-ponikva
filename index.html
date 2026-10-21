@@ -203,9 +203,9 @@
 
                     <!-- Quick Quota / Info Cards -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs w-full max-w-4xl" data-info-cards>
-                        <div class="col-span-2 min-w-0 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center">
-                            <span class="text-slate-400 font-medium mb-3">Igrišča</span>
-                            <div class="space-y-3" aria-label="Igrišča po podlagah">
+                        <div class="col-span-2 min-w-0 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center md:self-center" data-courts-card>
+                            <span class="text-slate-400 font-medium mb-3 md:mb-2">Igrišča</span>
+                            <div class="space-y-3 md:space-y-2" aria-label="Igrišča po podlagah">
                                 <div v-for="group in surfaceGroups" :key="group.id" class="flex items-center gap-3 text-sm font-bold text-court-highlight" :data-surface="group.id">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" width="36" height="24" style="flex:0 0 36px;display:block" aria-hidden="true" focusable="false">
                                     <rect width="48" height="32" rx="4" :fill="group.color"/>
@@ -252,7 +252,7 @@
             
             <div v-if="currentUser && statusBanner" class="mb-4 p-4 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 text-xs sm:text-sm flex items-start gap-3">
                 <i class="fa-solid fa-circle-info text-slate-500 mt-0.5"></i>
-                <div><strong>{{ statusBanner.title }}</strong><span v-if="statusBanner.text" class="block mt-0.5">{{ statusBanner.text }}</span></div>
+                <div><strong>{{ statusBanner.title }}</strong><span v-if="statusBanner.text" class="block mt-0.5 whitespace-pre-line break-words">{{ statusBanner.text }}</span></div>
             </div>
 
             <!-- NAVIGATION TABS -->
@@ -680,14 +680,16 @@
                             </li>
                             <li class="flex items-start gap-2.5">
                                 <i class="fa-solid fa-broom text-clay-600 mt-0.5"></i>
-                                <span><strong>Za vsa igrišča:</strong> Po igri poberite žogice, odnesite odpadke in osebne stvari ter uporabljeno opremo vrnite na označeno mesto. Igrišče zapustite urejeno do konca rezerviranega termina. Morebitne poškodbe sporočite upravljavcu.</span>
-                            </li>
-                        </ul>
-                        <h3 class="font-semibold text-sm text-slate-800 pt-2">Urejanje po igri glede na podlago</h3>
-                        <ul class="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
-                            <li v-for="group in surfaceGroups" :key="group.id" class="flex items-start gap-2.5">
-                                <i class="fa-solid fa-circle-info mt-0.5" :style="{ color: group.color }"></i>
-                                <span><strong>{{ group.label }}:</strong> {{ surfaceCare[group.id] || surfaceCare.other }}</span>
+                                <span>
+                                    <strong>{{ surfaceGroups.length > 1 ? 'Urejanje igrišča po igri (glede na podlago):' : 'Urejanje igrišča po igri:' }}</strong>
+                                    Po igri poberite žogice, odnesite odpadke in osebne stvari ter uporabljeno opremo vrnite na označeno mesto. Igrišče zapustite urejeno do konca rezerviranega termina. Morebitne poškodbe sporočite upravljavcu.
+                                    <template v-if="surfaceGroups.length === 1"> {{ surfaceCare[surfaceGroups[0].id] || surfaceCare.other }}</template>
+                                    <template v-else>
+                                        <span v-for="group in surfaceGroups" :key="group.id" class="block mt-1.5">
+                                            <span class="inline-block w-2 h-2 rounded-full mr-1.5 align-middle" :style="{ backgroundColor: group.color }"></span><strong>{{ group.label }}:</strong> {{ surfaceCare[group.id] || surfaceCare.other }}
+                                        </span>
+                                    </template>
+                                </span>
                             </li>
                         </ul>
                     </div>
@@ -757,7 +759,7 @@
                         <label>Zaprtje (ura)<input type="number" min="1" max="24" v-model.number="settingsForm.closeHour" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                         <label>Dnevna kvota (ur)<input type="number" min="1" max="24" v-model.number="settingsForm.dailyLimit" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
                         <label>Tedenska kvota (ur)<input type="number" min="1" max="168" v-model.number="settingsForm.weeklyLimit" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
-                        <label class="sm:col-span-2">Obvestilo za uporabnike (neobvezno)<input type="text" maxlength="160" v-model="settingsForm.notice" placeholder="npr. Igrišči sta zaprti do pomladi" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal"></label>
+                        <label class="sm:col-span-2">Obvestilo za uporabnike (neobvezno)<textarea rows="5" maxlength="2000" v-model="settingsForm.notice" placeholder="npr. Igrišči sta zaprti do pomladi" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal resize-y"></textarea><span class="block mt-1 text-[11px] font-normal text-slate-500 text-right">{{ (settingsForm.notice || '').length }} / 2000</span></label>
                     </div>
                     <p class="text-[11px] text-slate-500">Izven sezone so igrišča prikazana kot Neaktivno, termini pa kot Zaprt. Prazna datuma = brez omejitve sezone.</p>
                     <div v-if="affectedSettingsBookings.length" class="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950"><strong>Prizadete prihodnje rezervacije: {{ affectedSettingsBookings.length }}</strong><p class="mt-1">Rezervacije ostanejo shranjene. Preverite jih in po potrebi prekličite.</p><ul class="mt-2 space-y-1 max-h-48 overflow-y-auto"><li v-for="b in affectedSettingsBookings" :key="b.id">{{ b.date }} · {{ courtName(b.courtId) }} · {{ b.timeSlot }} · {{ b.userName }}</li></ul></div>
@@ -1387,8 +1389,7 @@
                     { id: 'hard', label: 'Trda podlaga' },
                     { id: 'grass', label: 'Travnata podlaga' },
                     { id: 'indoor', label: 'Dvoransko igrišče' },
-                    { id: 'artificial', label: 'Umetna trava' },
-                    { id: 'other', label: 'Druga podlaga' }
+                    { id: 'artificial', label: 'Umetna trava' }
                 ];
                 const surfaceOptions = computed(() => [...builtinSurfaces, ...(settings.value.customSurfaces || [])]);
                 const formSurfaceOptions = computed(() => [...builtinSurfaces, ...(settingsForm.value.customSurfaces || [])]);
@@ -1405,18 +1406,17 @@
                     hard: { color: '#2563b8', phrase: 's trdo podlago' },
                     grass: { color: '#43852e', phrase: 's travnato podlago' },
                     indoor: { color: '#8056b3', phrase: 'v dvorani' },
-                    artificial: { color: '#16877d', phrase: 'z umetno travo' },
-                    other: { color: '#64748b', phrase: 'z drugo podlago' }
+                    artificial: { color: '#16877d', phrase: 'z umetno travo' }
                 };
                 const courtCountLabel = n => n % 100 === 1 ? 'igrišče' : n % 100 === 2 ? 'igrišči' : [3,4].includes(n % 100) ? 'igrišča' : 'igrišč';
                 const surfaceGroups = computed(() => surfaceOptions.value.map(s => ({ ...s, ...surfaceAppearance[s.id], color: surfaceColor(s.id), phrase: surfaceAppearance[s.id]?.phrase || ('s podlago ' + s.label), count: courts.value.filter(c => c.surface === s.id).length })).filter(s => s.count > 0));
                 const surfaceCare = {
-                    clay: 'Pred iztekom termina povlecite namensko mrežo po obeh polovicah igrišča, tudi po prostoru za osnovnima črtama in ob straneh. Nato z namensko krtačo očistite črte. Pripomočke vrnite na ustrezno mesto. Za zalivanje upoštevajte navodila upravljavca.',
+                    clay: 'Pred iztekom termina z geblico grobo poravnajte teren, nato po celotnem igrišču povlecite mrežo, tudi po prostoru za osnovnima črtama in ob straneh. Po potrebi podlago zalijte s cevjo za zalivanje, v skladu z navodili upravljavca. Geblico, mrežo in cev vrnite na označeno mesto.',
                     hard: 'Po igri zadostuje, da igrišče pustite čisto in pospravljeno; vlečenje mreže ni potrebno. Razlito tekočino ali umazanijo, ki bi lahko povzročila zdrs, sporočite upravljavcu. Za čiščenje uporabite le pripomočke, ki jih odobri upravljavec.',
                     grass: 'Po igri poberite žogice in druge predmete ter prijavite poškodovane ali privzdignjene dele travne ruše. Igralci igrišča ne poravnavajo z vlečno mrežo. Košnjo, valjanje in popravilo ruše opravi vzdrževalec.',
                     indoor: 'Vstopajte v čistih teniških copatih, ki ne puščajo sledi. Po igri pospravite igrišče in uporabljeno opremo. Dvorana lahko ima različne podlage, zato morebitno krtačenje ali drugo urejanje izvedite po navodilih za konkretno podlago v dvorani.',
                     artificial: 'Po igri odstranite žogice in druge predmete. Če je pri igrišču predpisano krtačenje po uporabi, ga opravite s priloženo namensko krtačo po navodilih upravljavca. Za razporejanje ali dopolnjevanje polnila skrbi vzdrževalec, razen če upravljavec izrecno določi drugače.',
-                    other: 'Upoštevajte navodila za urejanje, objavljena pri tem igrišču. Če posebnih navodil ni, igrišče pustite čisto in pospravljeno, glede dodatnega urejanja pa se obrnite na upravljavca.'
+                    other: 'Upoštevajte navodila za urejanje, objavljena pri tem igrišču. Če posebnih navodil ni, glede dodatnega urejanja podlage se obrnite na upravljavca.'
                 };
                 const pad = pad2;
                 const courtName = (id) => (allCourts.value.find(c => c.id === id) || { name: id }).name;
