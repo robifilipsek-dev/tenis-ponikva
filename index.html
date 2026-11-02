@@ -6,16 +6,16 @@
     <title>Tenis igrišče Ponikva - Rezervacijski sistem</title>
 
     <!-- Ikona za zavihek / zaznamke v brskalniku (teniška žogica) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3CclipPath%20id='c'%3E%3Ccircle%20r='22'/%3E%3C/clipPath%3E%3C/defs%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%23f1ede4'/%3E%3Crect%20x='11'%20y='13'%20width='42'%20height='40'%20rx='5'%20fill='%23fff'/%3E%3Crect%20x='11'%20y='13'%20width='42'%20height='11'%20rx='5'%20fill='%231a4332'/%3E%3Crect%20x='11'%20y='19'%20width='42'%20height='5'%20fill='%231a4332'/%3E%3Crect%20x='11'%20y='13'%20width='42'%20height='40'%20rx='5'%20fill='none'%20stroke='%230f291e'%20stroke-width='1.4'/%3E%3Crect%20x='19.5'%20y='9'%20width='3.4'%20height='7.7'%20rx='1.7'%20fill='%230f291e'/%3E%3Crect%20x='41.1'%20y='9'%20width='3.4'%20height='7.7'%20rx='1.7'%20fill='%230f291e'/%3E%3Cg%20fill='%23cbd5e1'%3E%3Ccircle%20cx='20'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='28.2'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='36.3'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='44.4'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='20'%20cy='39.3'%20r='1.7'/%3E%3Ccircle%20cx='28.2'%20cy='39.3'%20r='1.7'/%3E%3Ccircle%20cx='44.4'%20cy='39.3'%20r='1.7'/%3E%3Ccircle%20cx='20'%20cy='46.9'%20r='1.7'/%3E%3Ccircle%20cx='28.2'%20cy='46.9'%20r='1.7'/%3E%3Ccircle%20cx='36.3'%20cy='46.9'%20r='1.7'/%3E%3Ccircle%20cx='44.4'%20cy='46.9'%20r='1.7'/%3E%3C/g%3E%3Cg%20transform='translate(36.3%2039.3)%20scale(.295)'%3E%3Ccircle%20r='22'%20fill='%23d4e83a'/%3E%3Cg%20clip-path='url(%23c)'%20fill='none'%20stroke='%23fff'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M-20%20-22Q8%200%20-20%2022'/%3E%3Cpath%20d='M20%20-22Q-8%200%2020%2022'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E">
-    <meta name="theme-color" content="#0f291e">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x2%3D%22.9%22%20y2%3D%221%22%20gradientUnits%3D%22objectBoundingBox%22%3E%3Cstop%20stop-color%3D%22%2327776c%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23103e44%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22url(%23g)%22%2F%3E%3Cg%20transform%3D%22rotate(-28%2032%2032)%22%20fill%3D%22none%22%20stroke%3D%22%23ecf7d8%22%20stroke-width%3D%222.6%22%3E%3Crect%20x%3D%2218%22%20y%3D%2212%22%20width%3D%2228%22%20height%3D%2240%22%20rx%3D%221%22%2F%3E%3Cpath%20d%3D%22M23%2012v40m18-40v40M23%2022h18M23%2042h18M32%2022v20M15%2032h34%22%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%2249%22%20cy%3D%2214%22%20r%3D%225%22%20fill%3D%22%23ddfa79%22%2F%3E%3C%2Fsvg%3E">
+    <meta name="theme-color" content="#f5f7f6">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Tenis Ponikva">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
     <!-- PWA: manifest, ikone in service worker so ločene datoteke ob index.html -->
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
     <script>
         (function () {
             // Brskalnik lahko sproži poziv za namestitev, še preden se naloži Vue – zato ga shranimo tukaj
@@ -44,11 +44,6 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts (Inter & Outfit) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-
     <script>
         tailwind.config = {
             theme: {
@@ -74,8 +69,8 @@
                         }
                     },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Outfit', 'sans-serif'],
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+                        display: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
                     }
                 }
             }
@@ -124,7 +119,67 @@
             .self-center { flex-wrap: wrap; max-width: 100%; }
         }
     </style>
-</head>
+<style>:root {--ink:#172e30;--teal:#145f59;--muted:#526466;--line:#dce4e1;--system:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
+#app .font-display {font-family:var(--system);letter-spacing:-.035em}
+#app>header {background:rgba(248,250,249,.92);color:var(--ink);border-color:var(--line);box-shadow:none;-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px)}
+#app header .font-display,#app header .text-slate-200 {color:var(--ink)}
+#app header .text-court-lime {color:var(--teal)}
+#app header img {box-shadow:none}
+#app header button {border-radius:999px;min-height:36px}
+#app header button:not(.bg-white) {background:#1b5452;color:white;border-color:transparent}
+.club-wrap {max-width:80rem;padding:0 2rem;margin:0 auto}
+.club-overview {padding-top:24px}
+.club-cover {isolation:isolate;position:relative;overflow:hidden;background:linear-gradient(110deg,#103d40,#1a5855 75%,#28736a);border-radius:27px;color:white}
+.cover-copy {position:relative;z-index:2;padding:32px clamp(24px,4vw,56px)}
+.eyebrow {display:flex;gap:10px;align-items:center;color:#dcf3e7;letter-spacing:.18em;font-size:10px;font-weight:700}
+.eyebrow span {height:2px;width:22px;background:#d4ee87}
+.cover-copy h1 {font-size:clamp(34px,4.25vw,66px);line-height:1.06;letter-spacing:-.065em;font-weight:680;margin:12px 0 7px}
+.cover-copy p {color:#d0e4dd;font-size:16px}
+.hours {display:inline-flex;align-items:center;gap:7px;margin-top:22px;border:1px solid #ffffff2d;background:#ffffff0c;border-radius:100px;padding:6px 12px;font-size:12px;color:#f1faf5}
+.cover-art {position:absolute;right:0;top:0;width:48%;height:100%;mask-image:linear-gradient(90deg,transparent,#000 24%)}
+#app [data-info-cards] {margin:12px 0 0;max-width:none;gap:12px}
+#app [data-info-cards]>div {position:relative;align-self:stretch;border:1px solid var(--line);background:#ffffff;color:var(--ink);border-radius:18px;padding:16px 20px;backdrop-filter:none}
+#app [data-info-cards] .text-slate-400,#app [data-info-cards] .text-slate-300 {color:var(--muted)}
+#app [data-info-cards]>div>span:first-child {font-size:12px;font-weight:650;color:#536767}
+#app [data-courts-card] .text-court-highlight {color:var(--ink)}
+#app [data-quota-card] .text-sm {font-size:22px;letter-spacing:-.045em;line-height:1.25;color:var(--teal)}
+#app [data-quota-card] .text-amber-400 {color:#905705}
+#app [data-quota-card]>span:last-child {min-height:0}
+#app .club-tabs {padding:4px;gap:3px;border-radius:16px;background:#e5eae8}
+#app .club-tabs button {border:0;background:transparent;box-shadow:none;border-radius:12px;color:#4f6160}
+#app .club-tabs button[aria-current=page] {background:#fff;color:#124c49;box-shadow:0 1px 4px #16393424}
+#app main>div:has(>.club-tabs) {border:0;padding:0;margin-bottom:16px}
+#app main .bg-white.rounded-2xl,#app .fixed .bg-white.rounded-2xl {border-radius:21px;border-color:var(--line);box-shadow:0 3px 14px -8px #183c3938}
+#app main .bg-court-green,#app .fixed button.bg-court-green {background-color:var(--teal)}
+#app .schedule-tools {flex-wrap:wrap}
+#app .schedule-tools>div:last-child {max-width:100%;flex-wrap:wrap}
+#app footer {background:transparent;border-color:var(--line);color:var(--muted)}
+#app button:focus-visible,#app input:focus-visible {outline:3px solid #248794;outline-offset:2px}
+@media(hover:hover){#app button:hover {filter:brightness(.96)}}
+@media(max-width:1023px){.club-wrap{padding:0 1.5rem}}
+@media(max-width:639px){
+.club-wrap{padding:0 1rem}.club-overview{padding-top:14px}.club-cover{border-radius:21px}.cover-copy{padding:22px 20px}.cover-copy h1{font-size:clamp(29px,7.7vw,43px);max-width:76%}.cover-copy p{font-size:13px}.hours{margin-top:14px}.cover-art{width:38%;opacity:.85;mask-image:linear-gradient(90deg,transparent,#000 52%);object-position:center}
+#app [data-info-cards]{gap:7px;margin-top:8px;grid-template-columns:1fr 1fr}#app [data-info-cards]>div{padding:11px 13px;border-radius:15px}#app [data-courts-card]>span{margin:0 0 5px}#app [data-courts-card]>div{display:flex;flex-wrap:wrap;gap:5px 15px}#app [data-courts-card]>div>div{margin:0;gap:6px;font-size:12px}
+#app [data-quota-card] .text-sm{font-size:19px}#app [data-quota-card]>span:last-child{margin-top:3px}
+#app .club-tabs button{flex-direction:column;gap:4px;min-height:44px;padding:6px 3px;font-size:11px}
+#app .schedule-tools>div:first-child>div{min-width:0;width:auto}#app .schedule-tools>div:first-child>button{flex-shrink:0}
+#app input:not([type=checkbox]):not([type=radio]){font-size:16px}
+#app main{padding-top:16px}
+}
+@media(prefers-reduced-motion:reduce){#app *,#app *::before,#app *::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<style>
+@media(max-width:639px){
+#app header button{min-height:44px;min-width:44px;justify-content:center}
+#app header .h-16{height:auto;min-height:64px;gap:6px;flex-wrap:wrap;padding-block:7px}
+#app header .space-x-3.cursor-pointer{gap:6px}
+#app header .space-x-3.cursor-pointer>div{margin:0}
+#app header img{width:32px;height:32px}
+#app header .font-display{font-size:16px}
+#app .club-tabs button{min-width:44px}
+}
+</style></head>
 <body class="text-slate-800 bg-slate-100 min-h-screen flex flex-col antialiased">
 
     <div id="app" v-cloak class="flex-grow flex flex-col">
@@ -136,7 +191,7 @@
                     
                     <!-- Logo & Brand -->
                     <div class="flex items-center space-x-3 cursor-pointer" @click="activeTab = 'schedule'">
-                        <img src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3CclipPath%20id='c'%3E%3Ccircle%20r='22'/%3E%3C/clipPath%3E%3C/defs%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%23f1ede4'/%3E%3Crect%20x='11'%20y='13'%20width='42'%20height='40'%20rx='5'%20fill='%23fff'/%3E%3Crect%20x='11'%20y='13'%20width='42'%20height='11'%20rx='5'%20fill='%231a4332'/%3E%3Crect%20x='11'%20y='19'%20width='42'%20height='5'%20fill='%231a4332'/%3E%3Crect%20x='11'%20y='13'%20width='42'%20height='40'%20rx='5'%20fill='none'%20stroke='%230f291e'%20stroke-width='1.4'/%3E%3Crect%20x='19.5'%20y='9'%20width='3.4'%20height='7.7'%20rx='1.7'%20fill='%230f291e'/%3E%3Crect%20x='41.1'%20y='9'%20width='3.4'%20height='7.7'%20rx='1.7'%20fill='%230f291e'/%3E%3Cg%20fill='%23cbd5e1'%3E%3Ccircle%20cx='20'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='28.2'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='36.3'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='44.4'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='20'%20cy='39.3'%20r='1.7'/%3E%3Ccircle%20cx='28.2'%20cy='39.3'%20r='1.7'/%3E%3Ccircle%20cx='44.4'%20cy='39.3'%20r='1.7'/%3E%3Ccircle%20cx='20'%20cy='46.9'%20r='1.7'/%3E%3Ccircle%20cx='28.2'%20cy='46.9'%20r='1.7'/%3E%3Ccircle%20cx='36.3'%20cy='46.9'%20r='1.7'/%3E%3Ccircle%20cx='44.4'%20cy='46.9'%20r='1.7'/%3E%3C/g%3E%3Cg%20transform='translate(36.3%2039.3)%20scale(.295)'%3E%3Ccircle%20r='22'%20fill='%23d4e83a'/%3E%3Cg%20clip-path='url(%23c)'%20fill='none'%20stroke='%23fff'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M-20%20-22Q8%200%20-20%2022'/%3E%3Cpath%20d='M20%20-22Q-8%200%2020%2022'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E" alt="Tenis Ponikva" class="w-10 h-10 rounded-xl shadow-lg ring-2 ring-white/20">
+                        <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x2%3D%22.9%22%20y2%3D%221%22%20gradientUnits%3D%22objectBoundingBox%22%3E%3Cstop%20stop-color%3D%22%2327776c%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23103e44%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22url(%23g)%22%2F%3E%3Cg%20transform%3D%22rotate(-28%2032%2032)%22%20fill%3D%22none%22%20stroke%3D%22%23ecf7d8%22%20stroke-width%3D%222.6%22%3E%3Crect%20x%3D%2218%22%20y%3D%2212%22%20width%3D%2228%22%20height%3D%2240%22%20rx%3D%221%22%2F%3E%3Cpath%20d%3D%22M23%2012v40m18-40v40M23%2022h18M23%2042h18M32%2022v20M15%2032h34%22%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%2249%22%20cy%3D%2214%22%20r%3D%225%22%20fill%3D%22%23ddfa79%22%2F%3E%3C%2Fsvg%3E" alt="Tenis Ponikva" class="w-10 h-10 rounded-xl shadow-lg ring-2 ring-white/20">
                         <div>
                             <div class="font-display font-bold text-lg sm:text-xl tracking-tight leading-none text-white flex items-center gap-2">
                                 Tenis Ponikva
@@ -147,7 +202,7 @@
                     <!-- Right User Controls -->
                     <div class="flex items-center space-x-2 sm:space-x-3">
                         <button v-if="canInstall" @click="installApp" title="Namesti aplikacijo" class="p-2 rounded-lg bg-court-green/80 hover:bg-court-accent text-court-highlight transition flex items-center gap-2 border border-court-accent/50 text-xs sm:text-sm">
-                            <i class="fa-solid fa-download"></i>
+                            <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-4-4 4 4 4-4M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
                             <span class="hidden sm:inline">Namesti aplikacijo</span>
                         </button>
 
@@ -160,7 +215,7 @@
                                 </span>
                             </div>
 
-                            <button @click="openProfileModal" class="p-2 rounded-lg bg-court-green/80 hover:bg-court-accent text-court-highlight transition flex items-center gap-2 border border-court-accent/50 text-xs sm:text-sm">
+                            <button aria-label="Moj profil" @click="openProfileModal" class="p-2 rounded-lg bg-court-green/80 hover:bg-court-accent text-court-highlight transition flex items-center gap-2 border border-court-accent/50 text-xs sm:text-sm">
                                 <i class="fa-solid fa-user-gear"></i>
                                 <span class="hidden sm:inline">Moj profil</span>
                             </button>
@@ -188,19 +243,32 @@
         </header>
 
         <!-- HERO BANNER & CLUB INFO -->
-        <section class="bg-gradient-to-r from-court-dark via-court-green to-court-accent text-white py-6 px-4 sm:px-6 lg:px-8 border-b border-court-accent shadow-inner">
-            <div class="max-w-7xl mx-auto">
-                <div class="flex flex-col items-center gap-6">
-                    
-                    <div>
-                        <h1 class="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white md:text-center">
-                            Spletna rezervacija igrišč
-                        </h1>
-                        <p class="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed md:text-center md:mx-auto">
-                            Izberite termin in igrišče ter igrajte tenis. Obratujemo vsak dan od <strong>{{ openHoursText }}</strong>.
-                        </p>
+        <section class="club-overview">
+            <div class="club-wrap"><div>
+                <div class="club-cover">
+                    <div class="cover-copy">
+                        <span class="eyebrow"><span></span> TENIS PONIKVA</span>
+                        <h1>Rezervacija igrišč</h1>
+                        <p>Izberite igrišče in svoj termin.</p>
+                        <div class="hours"><i class="fa-regular fa-clock" aria-hidden="true"></i> Vsak dan <b>{{ openHoursText }}</b></div>
                     </div>
-
+                    <svg class="cover-art" viewBox="0 0 540 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="courtPaint" x2="1" y2="1"><stop stop-color="#76b6aa"/><stop offset="1" stop-color="#277b78"/></linearGradient>
+                            <radialGradient id="ballPaint" cx=".32" cy=".24" r=".8"><stop stop-color="#f3ffac"/><stop offset=".64" stop-color="#c9ed60"/><stop offset="1" stop-color="#86ae42"/></radialGradient>
+                            <clipPath id="ballEdge"><circle r="34"/></clipPath>
+                            <filter id="ballShadow" x="-80%" y="-100%" width="260%" height="300%"><feGaussianBlur stdDeviation="6"/></filter>
+                        </defs>
+                        <g transform="matrix(1,-.37,.75,.78,3,142)">
+                            <rect x="-20" y="-28" width="610" height="280" fill="#135b5c"/>
+                            <rect width="548" height="218" fill="url(#courtPaint)"/>
+                            <g fill="none" stroke="#d1eadc" stroke-width="3"><rect x="2" y="2" width="544" height="214"/><path d="M2 29H546M2 189H546M114 29V189M434 29V189M114 109H434"/></g>
+                            <path d="M274 -8v236" stroke="#123f47" stroke-width="6"/><path d="M271 -9v236" stroke="#e5f5df" stroke-width="2.4"/>
+                        </g>
+                        <ellipse cx="358" cy="151" rx="37" ry="12" fill="#163d3a" opacity=".46" transform="rotate(-18 358 151)" filter="url(#ballShadow)"/>
+                        <g transform="translate(351 108) rotate(-32)"><circle r="34" fill="url(#ballPaint)"/><g clip-path="url(#ballEdge)" fill="none" stroke="#f4fbc1" stroke-width="3.7"><path d="M-24 -34Q8 -2 -26 35M26 -34Q-5 -2 28 35"/></g></g>
+                    </svg>
+                </div>
                     <!-- Quick Quota / Info Cards -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs w-full max-w-4xl" data-info-cards>
                         <div class="col-span-2 min-w-0 bg-slate-900/50 backdrop-blur border border-white/10 rounded-xl p-3 flex flex-col justify-center md:self-center" data-courts-card>
@@ -257,13 +325,13 @@
 
             <!-- NAVIGATION TABS -->
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-slate-200 pb-3">
-                <nav class="flex flex-wrap w-full lg:w-auto gap-1.5 sm:gap-3">
+                <nav aria-label="Glavna navigacija" class="club-tabs flex flex-wrap w-full lg:w-auto gap-1.5 sm:gap-3">
                     <button
                         v-for="tab in tabs" :key="tab.id"
-                        @click="activeTab = tab.id"
+                        :aria-current="activeTab === tab.id ? 'page' : undefined" @click="activeTab = tab.id"
                         :class="activeTab === tab.id ? 'bg-court-green text-white shadow-sm' : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50'"
                         class="flex-1 lg:flex-none px-2 sm:px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition flex items-center justify-center gap-1.5 sm:gap-2 border border-slate-200/80 relative whitespace-nowrap">
-                        <i :class="tab.icon"></i>
+                        <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g v-if="tab.id === 'schedule'"><rect x="3" y="5" width="18" height="16" rx="4"/><path d="M7 3v4m10-4v4M3 10h18m-13 5h3"/></g><g v-if="tab.id === 'week'"><rect x="3" y="5" width="18" height="16" rx="4"/><path d="M7 3v4m10-4v4M3 10h18m-13 4v3m4-3v3m4-3v3"/></g><g v-if="tab.id === 'myBookings'"><path d="M6 4h12v17l-6-4-6 4z"/><path d="m9 10 2 2 4-4"/></g><g v-if="tab.id === 'info'"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.1"/></g><g v-if="tab.id === 'admin'"><path d="m12 3 8 3v5c0 5-4 8-8 10-4-2-8-5-8-10V6z"/><path d="m8 12 3 3 5-6"/></g></svg>
                         <span class="sm:hidden">{{ tab.short }}</span>
                         <span class="hidden sm:inline">{{ tab.label }}</span>
                         <span v-if="tab.id === 'myBookings' && userFutureBookings.length > 0" class="bg-clay-600 text-white text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
@@ -284,7 +352,7 @@
             <div v-show="activeTab === 'schedule'" class="space-y-6">
                 
                 <!-- DATE & COURT CONTROLS TOOLBAR -->
-                <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                <div class="schedule-tools bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
                     
                     <!-- Date Selection -->
                     <div class="flex items-center space-x-2">
@@ -366,7 +434,7 @@
 
                 <!-- LOGIN GATE -->
                 <div v-if="authReady && !currentUser" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-8 text-center">
-                    <img src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3CclipPath%20id='c'%3E%3Ccircle%20r='22'/%3E%3C/clipPath%3E%3C/defs%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%23f1ede4'/%3E%3Crect%20x='11'%20y='13'%20width='42'%20height='40'%20rx='5'%20fill='%23fff'/%3E%3Crect%20x='11'%20y='13'%20width='42'%20height='11'%20rx='5'%20fill='%231a4332'/%3E%3Crect%20x='11'%20y='19'%20width='42'%20height='5'%20fill='%231a4332'/%3E%3Crect%20x='11'%20y='13'%20width='42'%20height='40'%20rx='5'%20fill='none'%20stroke='%230f291e'%20stroke-width='1.4'/%3E%3Crect%20x='19.5'%20y='9'%20width='3.4'%20height='7.7'%20rx='1.7'%20fill='%230f291e'/%3E%3Crect%20x='41.1'%20y='9'%20width='3.4'%20height='7.7'%20rx='1.7'%20fill='%230f291e'/%3E%3Cg%20fill='%23cbd5e1'%3E%3Ccircle%20cx='20'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='28.2'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='36.3'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='44.4'%20cy='31.6'%20r='1.7'/%3E%3Ccircle%20cx='20'%20cy='39.3'%20r='1.7'/%3E%3Ccircle%20cx='28.2'%20cy='39.3'%20r='1.7'/%3E%3Ccircle%20cx='44.4'%20cy='39.3'%20r='1.7'/%3E%3Ccircle%20cx='20'%20cy='46.9'%20r='1.7'/%3E%3Ccircle%20cx='28.2'%20cy='46.9'%20r='1.7'/%3E%3Ccircle%20cx='36.3'%20cy='46.9'%20r='1.7'/%3E%3Ccircle%20cx='44.4'%20cy='46.9'%20r='1.7'/%3E%3C/g%3E%3Cg%20transform='translate(36.3%2039.3)%20scale(.295)'%3E%3Ccircle%20r='22'%20fill='%23d4e83a'/%3E%3Cg%20clip-path='url(%23c)'%20fill='none'%20stroke='%23fff'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M-20%20-22Q8%200%20-20%2022'/%3E%3Cpath%20d='M20%20-22Q-8%200%2020%2022'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E" alt="" class="w-16 h-16 rounded-2xl mx-auto mb-3 shadow">
+                    <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x2%3D%22.9%22%20y2%3D%221%22%20gradientUnits%3D%22objectBoundingBox%22%3E%3Cstop%20stop-color%3D%22%2327776c%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23103e44%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22url(%23g)%22%2F%3E%3Cg%20transform%3D%22rotate(-28%2032%2032)%22%20fill%3D%22none%22%20stroke%3D%22%23ecf7d8%22%20stroke-width%3D%222.6%22%3E%3Crect%20x%3D%2218%22%20y%3D%2212%22%20width%3D%2228%22%20height%3D%2240%22%20rx%3D%221%22%2F%3E%3Cpath%20d%3D%22M23%2012v40m18-40v40M23%2022h18M23%2042h18M32%2022v20M15%2032h34%22%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%2249%22%20cy%3D%2214%22%20r%3D%225%22%20fill%3D%22%23ddfa79%22%2F%3E%3C%2Fsvg%3E" alt="" class="w-16 h-16 rounded-2xl mx-auto mb-3 shadow">
                     <h2 class="font-display font-bold text-xl text-slate-900">Prijavite se za rezervacijo</h2>
                     <p class="text-xs sm:text-sm text-slate-500 mt-1 mb-5">Za ogled zasedenosti in rezervacijo igrišča se prijavite z Google računom ali nadaljujte kot gost.</p>
                     <div class="flex flex-wrap items-center justify-center gap-3">
@@ -1331,7 +1399,7 @@
 
                 function checkInstallState() {
                     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
                     canInstall.value = !isStandalone && !window.__pwaInstalled && (!!window.__pwaPrompt || isIOS);
                 }
 
@@ -1343,7 +1411,7 @@
                         window.__pwaPrompt = null;
                         checkInstallState();
                     } else {
-                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                        const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
                         if (isIOS) {
                             triggerToast('Namestitev', "Tapni gumb 'Deli' v Safariju in izberi 'Dodaj na domači zaslon'.", 'info');
                         } else {
