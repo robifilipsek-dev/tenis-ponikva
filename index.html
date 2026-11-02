@@ -49,23 +49,28 @@
             theme: {
                 extend: {
                     colors: {
+                        slate: { 50: '#f7f9f7', 100: '#f0f3f0', 200: '#dce4de', 300: '#c3cec7', 400: '#8f9f98', 500: '#626f6a', 600: '#4c5e56', 700: '#374b42', 800: '#293c34', 900: '#1c3028', 950: '#14251f' },
+                        emerald: { 50: '#f1f7f2', 100: '#e2efe5', 200: '#c4dfcd', 300: '#a0c7ae', 400: '#7bac91', 500: '#56866e', 600: '#386c54', 700: '#2c5844', 800: '#234b3a', 900: '#1b3b2e', 950: '#10281e' },
+                        amber: { 50: '#fbf8ed', 100: '#f4ecd6', 200: '#e8d9b1', 300: '#d6bd89', 400: '#b89a64', 500: '#a48751', 600: '#866d40', 700: '#715a33', 800: '#5a472b', 900: '#493a25', 950: '#322819' },
+                        red: { 50: '#fcf5f1', 100: '#f6e7e0', 200: '#ebd2c5', 300: '#dcb39e', 400: '#c9937c', 500: '#ae755f', 600: '#965b46', 700: '#794937', 800: '#603b2f', 900: '#4c3027', 950: '#34221c' },
+                        blue: { 50: '#f3f6f5', 100: '#e7eeea', 200: '#d1dfd8', 300: '#b8ccc2', 400: '#91afa1', 500: '#688678', 600: '#4e7060', 700: '#3b5c4d', 800: '#304b40', 900: '#253e34', 950: '#192c24' },
                         clay: {
-                            50: '#fff7f5',
-                            100: '#ffeee8',
-                            200: '#ffd9cc',
-                            500: '#e05638',
-                            600: '#c24127',
-                            700: '#a1311b',
-                            800: '#852a1a',
+                            50: '#fbf6f2',
+                            100: '#f4e8df',
+                            200: '#e8d1c0',
+                            500: '#aa7559',
+                            600: '#905e46',
+                            700: '#744b39',
+                            800: '#5d3e30',
                         },
                         court: {
-                            dark: '#0f291e',
-                            green: '#1a4332',
-                            accent: '#2d6a4f',
-                            light: '#40916c',
-                            grass: '#52b788',
-                            lime: '#74c69d',
-                            highlight: '#d8f3dc'
+                            dark: '#183d32',
+                            green: '#285540',
+                            accent: '#386c54',
+                            light: '#507e64',
+                            grass: '#73a086',
+                            lime: '#bad8c4',
+                            highlight: '#e3f0e6'
                         }
                     },
                     fontFamily: {
@@ -110,7 +115,7 @@
 
         *, *::before, *::after { box-sizing: border-box; }
         button:disabled { opacity: .55; cursor: wait; }
-        button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #40916c; outline-offset: 2px; }
+        button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #507e64; outline-offset: 2px; }
         .fixed.inset-0 > div { max-height: calc(100dvh - 2rem); overflow-y: auto; }
         @media (max-width: 640px) {
             header .h-16 { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding-block: 8px; }
@@ -119,7 +124,7 @@
             .self-center { flex-wrap: wrap; max-width: 100%; }
         }
     </style>
-<style>:root {--ink:#172e30;--teal:#145f59;--muted:#526466;--line:#dce4e1;--system:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+<style>:root {--ink:#172e30;--teal:#31674f;--muted:#526466;--line:#dce4e1;--system:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
 #app .font-display {font-family:var(--system);letter-spacing:-.035em}
 #app>header {background:rgba(248,250,249,.92);color:var(--ink);border-color:var(--line);box-shadow:none;-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px)}
@@ -127,13 +132,13 @@ html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
 #app header .text-court-lime {color:var(--teal)}
 #app header img {box-shadow:none}
 #app header button {border-radius:999px;min-height:36px}
-#app header button:not(.bg-white) {background:#1b5452;color:white;border-color:transparent}
+#app header button:not(.bg-white) {background:#315f4b;color:white;border-color:transparent}
 .club-wrap {max-width:80rem;padding:0 2rem;margin:0 auto}
 .club-overview {padding-top:24px}
 .club-cover {isolation:isolate;position:relative;overflow:hidden;background:linear-gradient(110deg,#103d40,#1a5855 75%,#28736a);border-radius:27px;color:white}
 .cover-copy {position:relative;z-index:2;padding:32px clamp(24px,4vw,56px)}
 .eyebrow {display:flex;gap:10px;align-items:center;color:#dcf3e7;letter-spacing:.18em;font-size:10px;font-weight:700}
-.eyebrow span {height:2px;width:22px;background:#d4ee87}
+.eyebrow span {height:2px;width:22px;background:#b9d6bb}
 .cover-copy h1 {font-size:clamp(34px,4.25vw,66px);line-height:1.06;letter-spacing:-.065em;font-weight:680;margin:12px 0 7px}
 .cover-copy p {color:#d0e4dd;font-size:16px}
 .hours {display:inline-flex;align-items:center;gap:7px;margin-top:22px;border:1px solid #ffffff2d;background:#ffffff0c;border-radius:100px;padding:6px 12px;font-size:12px;color:#f1faf5}
@@ -148,14 +153,14 @@ html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
 #app [data-quota-card]>span:last-child {min-height:0}
 #app .club-tabs {padding:4px;gap:3px;border-radius:16px;background:#e5eae8}
 #app .club-tabs button {border:0;background:transparent;box-shadow:none;border-radius:12px;color:#4f6160}
-#app .club-tabs button[aria-current=page] {background:#fff;color:#124c49;box-shadow:0 1px 4px #16393424}
+#app .club-tabs button[aria-current=page] {background:#fff;color:#294f3e;box-shadow:0 1px 4px #16393424}
 #app main>div:has(>.club-tabs) {border:0;padding:0;margin-bottom:16px}
 #app main .bg-white.rounded-2xl,#app .fixed .bg-white.rounded-2xl {border-radius:21px;border-color:var(--line);box-shadow:0 3px 14px -8px #183c3938}
 #app main .bg-court-green,#app .fixed button.bg-court-green {background-color:var(--teal)}
 #app .schedule-tools {flex-wrap:wrap}
 #app .schedule-tools>div:last-child {max-width:100%;flex-wrap:wrap}
 #app footer {background:transparent;border-color:var(--line);color:var(--muted)}
-#app button:focus-visible,#app input:focus-visible {outline:3px solid #248794;outline-offset:2px}
+#app button:focus-visible,#app input:focus-visible {outline:3px solid #52866c;outline-offset:2px}
 @media(hover:hover){#app button:hover {filter:brightness(.96)}}
 @media(max-width:1023px){.club-wrap{padding:0 1.5rem}}
 @media(max-width:639px){
@@ -178,6 +183,15 @@ html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
 #app header img{width:32px;height:32px}
 #app header .font-display{font-size:16px}
 #app .club-tabs button{min-width:44px}
+}
+</style><style>
+.club-cover{background:radial-gradient(ellipse at 82% 15%,#426855 0%,transparent 56%),linear-gradient(115deg,#1c382d,#254a3b)}
+.club-cover .cover-art{width:46%;height:100%;mask-image:none;opacity:1;pointer-events:none}
+.club-cover .cover-copy{width:57%;padding-block:clamp(32px,4vw,54px)}
+@media(max-width:639px){
+.club-cover .cover-copy{width:100%;padding:20px 20px 0}
+.club-cover .cover-copy h1{max-width:100%}
+.club-cover .cover-art{position:relative;display:block;width:100%;height:clamp(126px,35vw,180px);margin:0 auto 4px}
 }
 </style></head>
 <body class="text-slate-800 bg-slate-100 min-h-screen flex flex-col antialiased">
@@ -252,22 +266,28 @@ html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
                         <p>Izberite igrišče in svoj termin.</p>
                         <div class="hours"><i class="fa-regular fa-clock" aria-hidden="true"></i> Vsak dan <b>{{ openHoursText }}</b></div>
                     </div>
-                    <svg class="cover-art" viewBox="0 0 540 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-                        <defs>
-                            <linearGradient id="courtPaint" x2="1" y2="1"><stop stop-color="#76b6aa"/><stop offset="1" stop-color="#277b78"/></linearGradient>
-                            <radialGradient id="ballPaint" cx=".32" cy=".24" r=".8"><stop stop-color="#f3ffac"/><stop offset=".64" stop-color="#c9ed60"/><stop offset="1" stop-color="#86ae42"/></radialGradient>
-                            <clipPath id="ballEdge"><circle r="34"/></clipPath>
-                            <filter id="ballShadow" x="-80%" y="-100%" width="260%" height="300%"><feGaussianBlur stdDeviation="6"/></filter>
-                        </defs>
-                        <g transform="matrix(1,-.37,.75,.78,3,142)">
-                            <rect x="-20" y="-28" width="610" height="280" fill="#135b5c"/>
-                            <rect width="548" height="218" fill="url(#courtPaint)"/>
-                            <g fill="none" stroke="#d1eadc" stroke-width="3"><rect x="2" y="2" width="544" height="214"/><path d="M2 29H546M2 189H546M114 29V189M434 29V189M114 109H434"/></g>
-                            <path d="M274 -8v236" stroke="#123f47" stroke-width="6"/><path d="M271 -9v236" stroke="#e5f5df" stroke-width="2.4"/>
-                        </g>
-                        <ellipse cx="358" cy="151" rx="37" ry="12" fill="#163d3a" opacity=".46" transform="rotate(-18 358 151)" filter="url(#ballShadow)"/>
-                        <g transform="translate(351 108) rotate(-32)"><circle r="34" fill="url(#ballPaint)"/><g clip-path="url(#ballEdge)" fill="none" stroke="#f4fbc1" stroke-width="3.7"><path d="M-24 -34Q8 -2 -26 35M26 -34Q-5 -2 28 35"/></g></g>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="cover-art" viewBox="0 0 560 318" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+<defs>
+  <linearGradient id="tp-surface" x2="1" y2="1"><stop stop-color="#a8c9af"/><stop offset=".42" stop-color="#79a78c"/><stop offset="1" stop-color="#4f806b"/></linearGradient>
+  <linearGradient id="tp-side"><stop stop-color="#295d55"/><stop offset=".65" stop-color="#448377"/><stop offset="1" stop-color="#184a48"/></linearGradient>
+  <pattern id="tp-mesh" width="5" height="4" patternUnits="userSpaceOnUse"><path d="M0 4V0h5" fill="none" stroke="#daebe2" stroke-opacity=".72" stroke-width=".75"/></pattern>
+  <filter id="tp-blur" x="-45%" y="-100%" width="190%" height="300%"><feGaussianBlur stdDeviation="6"/></filter>
+</defs>
+<path d="m29 177 358-111 151 128-358 111z" fill="#061f21" opacity=".48" filter="url(#tp-blur)"/>
+<path d="m28 158 355-110 145 121v7L173 287 28 166z" fill="url(#tp-side)"/>
+<g transform="matrix(.81,-.25,.66,.55,28,158)">
+  <rect width="438" height="220" fill="#739781"/>
+  <rect x="12" y="12" width="414" height="196" fill="url(#tp-surface)"/>
+  <g fill="none" stroke="#eef6dc" stroke-width="2.4"><rect x="23" y="23" width="392" height="174"/><path d="M23 45h392M23 175h392M114 45v130m210-130v130m-210-65h210M23 110h4m384 0h4"/></g>
+  <path d="m219 9 12 9v202l-12-11z" fill="#224d47" opacity=".22"/>
+</g>
+<g transform="matrix(.66,.55,0,1,211.3,86.8)">
+  <path d="M0-3Q103 3 205-3v17H0z" fill="#254a46"/>
+  <path d="M0-3Q103 3 205-3v17H0z" fill="url(#tp-mesh)"/>
+  <path d="M0-3Q103 3 205-3" fill="none" stroke="#f8f6df" stroke-width="3"/>
+  <path d="M0-6v22m205-22v22" stroke="#21463e" stroke-width="4"/>
+</g>
+</svg>
                 </div>
                     <!-- Quick Quota / Info Cards -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs w-full max-w-4xl" data-info-cards>
@@ -1470,11 +1490,11 @@ html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
                     .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id)));
                 const courts = computed(() => allCourts.value.filter(c => !c.removed).map((c,i) => ({ ...c, n: i + 1 })));
                 const surfaceAppearance = {
-                    clay: { color: '#b94f35', phrase: 's peščeno podlago' },
-                    hard: { color: '#2563b8', phrase: 's trdo podlago' },
-                    grass: { color: '#43852e', phrase: 's travnato podlago' },
-                    indoor: { color: '#8056b3', phrase: 'v dvorani' },
-                    artificial: { color: '#16877d', phrase: 'z umetno travo' }
+                    clay: { color: '#a1654c', phrase: 's peščeno podlago' },
+                    hard: { color: '#577280', phrase: 's trdo podlago' },
+                    grass: { color: '#527858', phrase: 's travnato podlago' },
+                    indoor: { color: '#776978', phrase: 'v dvorani' },
+                    artificial: { color: '#4d7969', phrase: 'z umetno travo' }
                 };
                 const courtCountLabel = n => n % 100 === 1 ? 'igrišče' : n % 100 === 2 ? 'igrišči' : [3,4].includes(n % 100) ? 'igrišča' : 'igrišč';
                 const surfaceGroups = computed(() => surfaceOptions.value.map(s => ({ ...s, ...surfaceAppearance[s.id], color: surfaceColor(s.id), phrase: surfaceAppearance[s.id]?.phrase || ('s podlago ' + s.label), count: courts.value.filter(c => c.surface === s.id).length })).filter(s => s.count > 0));
