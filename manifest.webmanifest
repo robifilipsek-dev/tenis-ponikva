@@ -2,7 +2,7 @@
   "name": "Tenis Ponikva",
   "short_name": "Tenis Ponikva",
   "lang": "sl",
-  "start_url": "./tenis.html",
+  "start_url": "./tenis.html?v=6",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1c382d",
