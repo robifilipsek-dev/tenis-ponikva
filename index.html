@@ -232,14 +232,8 @@ html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
 
 }
 </style><style>
-#launch-screen{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#1c382d;color:#f6f7ed;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;transition:opacity .22s ease}
-#launch-screen.leaving{opacity:0;pointer-events:none}
-.launch-brand{display:grid;justify-items:center;gap:18px;text-align:center}
-.launch-brand img{display:block;width:88px;height:88px}
-.launch-brand strong{font-size:30px;line-height:1.15;font-weight:600;letter-spacing:-.04em}
-#launch-help{position:absolute;top:calc(50% + 94px);left:16px;right:16px;text-align:center;font-size:14px;color:#e1eadf}
+#launch-help{position:absolute;top:calc(50% + 94px);left:16px;right:16px;text-align:center;font-size:14px;color:#19382c}
 #launch-help button{margin:8px auto;padding:10px 18px;border-radius:24px;color:#19382c;background:#e0eadd;font-weight:600}
-@media(prefers-reduced-motion:reduce){#launch-screen{transition:none}}
 </style><style id="ponikva-banner-layout">
 /* Keep the illustration anchored inside the banner in every display mode. */
 #app .club-cover{position:relative;overflow:hidden}
@@ -250,8 +244,7 @@ html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
 }
 </style></head>
 <body class="text-slate-800 bg-slate-100 min-h-screen flex flex-col antialiased">
-<div id="launch-screen" role="status" aria-label="Nalaganje aplikacije Tenis Ponikva">
-  <div class="launch-brand"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2096%2096%22%3E%3Crect%20width%3D%2296%22%20height%3D%2296%22%20rx%3D%2221%22%20fill%3D%22%23f1ede4%22%2F%3E%3Cg%20transform%3D%22scale(.96)%22%3E%3Crect%20x%3D%2218%22%20y%3D%2223%22%20width%3D%2266%22%20height%3D%2263%22%20rx%3D%228%22%20fill%3D%22%2319382d30%22%2F%3E%3Crect%20x%3D%2217%22%20y%3D%2220%22%20width%3D%2266%22%20height%3D%2263%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%2217%22%20y%3D%2220%22%20width%3D%2266%22%20height%3D%2217%22%20rx%3D%228%22%20fill%3D%22%231a4332%22%2F%3E%3Crect%20x%3D%2217%22%20y%3D%2230%22%20width%3D%2266%22%20height%3D%227%22%20rx%3D%220%22%20fill%3D%22%231a4332%22%2F%3E%3Cpath%20d%3D%22M32.84%2016v10m34.32%20-10v10%22%20fill%3D%22none%22%20stroke%3D%22%23193b2c%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Crect%20x%3D%2229%22%20y%3D%2246%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2241%22%20y%3D%2246%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2253%22%20y%3D%2246%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2265%22%20y%3D%2246%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2229%22%20y%3D%2256%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2241%22%20y%3D%2256%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2253%22%20y%3D%2256%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2265%22%20y%3D%2256%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2229%22%20y%3D%2266%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2241%22%20y%3D%2266%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2253%22%20y%3D%2266%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Crect%20x%3D%2265%22%20y%3D%2266%22%20width%3D%224%22%20height%3D%224%22%20rx%3D%221.4%22%20fill%3D%22%23bcc9be%22%2F%3E%3Cg%20transform%3D%22translate(55%2058)%20rotate(-32)%20scale(0.4)%22%3E%3Ccircle%20r%3D%2220%22%20fill%3D%22%23d8e868%22%2F%3E%3Cpath%20d%3D%22M-13.2-15C-1-6-1%206-13.2%2015M13.2-15C1-6%201%206%2013.2%2015%22%20fill%3D%22none%22%20stroke%3D%22%23faffda%22%20stroke-width%3D%222.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E" width="88" height="88" alt=""><strong>Tenis Ponikva</strong></div>
+<div id="launch-status" role="status">
   <div id="launch-help" hidden>Nalaganje traja dlje kot običajno. Preverite povezavo.<br><button type="button" onclick="location.reload()">Poskusi znova</button></div>
   <noscript>Za uporabo aplikacije omogočite JavaScript.</noscript>
 </div>
@@ -2801,9 +2794,8 @@ window.ponikvaLoadTimer=setTimeout(function(){document.getElementById('launch-he
             }
         }).mount('#app');
         clearTimeout(window.ponikvaLoadTimer);
+        document.getElementById('launch-status').remove();
         document.querySelector('meta[name="theme-color"]').content='#f5f7f6';
-        const launchScreen=document.getElementById('launch-screen');
-        requestAnimationFrame(()=>{launchScreen.classList.add('leaving');setTimeout(()=>launchScreen.remove(),240)});
     </script>
 </body>
 </html>
