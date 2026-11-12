@@ -328,6 +328,9 @@ html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
   #app .schedule-tools>div:first-child input[type=text]{padding-left:8px;padding-right:34px}
 }
 </style>
+<style id="ponikva-booking-count-badge">
+#app .club-tabs .menu-booking-count{position:absolute;top:-4px;right:-3px;z-index:2;display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 5px;border:2px solid #fff;border-radius:999px;background:#f97316;color:#fff;font-size:10px;font-weight:800;line-height:1;box-shadow:0 2px 5px #7c2d1240;white-space:nowrap;pointer-events:none}
+</style>
 </head>
 <body class="text-slate-800 bg-slate-100 min-h-screen flex flex-col antialiased">
 <div id="launch-status" role="status">
@@ -610,7 +613,7 @@ window.ponikvaLoadTimer=setTimeout(function(){document.getElementById('launch-he
                         <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g v-if="tab.id === 'schedule'"><rect x="3" y="5" width="18" height="16" rx="4"/><path d="M7 3v4m10-4v4M3 10h18m-13 5h3"/></g><g v-if="tab.id === 'week'"><rect x="3" y="5" width="18" height="16" rx="4"/><path d="M7 3v4m10-4v4M3 10h18m-13 4v3m4-3v3m4-3v3"/></g><g v-if="tab.id === 'myBookings'"><path d="M6 4h12v17l-6-4-6 4z"/><path d="m9 10 2 2 4-4"/></g><g v-if="tab.id === 'info'"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.1"/></g><g v-if="tab.id === 'admin'"><path d="m12 3 8 3v5c0 5-4 8-8 10-4-2-8-5-8-10V6z"/><path d="m8 12 3 3 5-6"/></g></svg>
                         <span class="sm:hidden">{{ tab.short }}</span>
                         <span class="hidden sm:inline">{{ tab.label }}</span>
-                        <span v-if="tab.id === 'myBookings' && userFutureBookings.length > 0" class="bg-clay-600 text-white text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
+                        <span v-if="tab.id === 'myBookings' && userFutureBookings.length > 0" class="menu-booking-count">
                             {{ userFutureBookings.length }}
                         </span>
                     </button>
