@@ -150,7 +150,7 @@
         *, *::before, *::after { box-sizing: border-box; }
         button:disabled { opacity: .55; cursor: wait; }
         button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #507e64; outline-offset: 2px; }
-        .fixed.inset-0 > div { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+        .fixed.inset-0 > div { max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain; }
         @media (max-width: 640px) {
             header .h-16 { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding-block: 8px; }
             input, select, textarea { font-size: 16px !important; min-width: 0; }
@@ -319,6 +319,14 @@ html body {background:#f4f6f5;color:var(--ink);font-family:var(--system)}
 #app [data-courts-card]{border-top:3px solid #f08a4b}
 #app [data-quota-card=daily]{border-top:3px solid #0ea5e9}
 #app [data-quota-card=weekly]{border-top:3px solid #8b5cf6}
+</style>
+<style id="ponikva-mobile-layout-fixes">
+@media(max-width:390px){
+  #app .schedule-tools>div:first-child{display:grid;grid-template-columns:40px minmax(0,1fr) 40px auto;gap:6px;width:100%;align-items:center}
+  #app .schedule-tools>div:first-child>div{width:auto;min-width:0}
+  #app .schedule-tools>div:first-child>button{min-width:40px;flex-shrink:0}
+  #app .schedule-tools>div:first-child input[type=text]{padding-left:8px;padding-right:34px}
+}
 </style>
 </head>
 <body class="text-slate-800 bg-slate-100 min-h-screen flex flex-col antialiased">
@@ -904,13 +912,13 @@ window.ponikvaLoadTimer=setTimeout(function(){document.getElementById('launch-he
                                     <i class="fa-solid fa-chevron-right text-[9px] text-slate-400" aria-hidden="true"></i>
                                 </button>
                                 <span :style="{backgroundColor: surfaceColor(c.surface)}" class="w-5 h-5 rounded-md text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">{{ c.n }}</span>
-                                <span class="flex-1 min-w-0 grid gap-1" :style="{ gridTemplateColumns: 'repeat(' + Math.ceil(c.cells.length / 2) + ', minmax(0, 1fr))' }">
+                                <span class="flex-1 min-w-0 overflow-x-auto overscroll-x-contain" role="region" :aria-label="'Termini po urah za ' + c.name"><span class="grid gap-1" :style="{ gridTemplateColumns: 'repeat(' + Math.ceil(c.cells.length / 2) + ', minmax(44px, 1fr))', width: 'max-content', minWidth: '100%' }">
                                     <span v-for="cell in c.cells" :key="cell.hour" :title="cell.title"
                                           role="button" tabindex="0" :aria-label="cell.title" :aria-pressed="weekTip && weekTip.key === cell.key ? 'true' : 'false'"
                                           @click="showWeekTip(day, c, cell)" @keydown.enter.prevent="showWeekTip(day, c, cell)" @keydown.space.prevent="showWeekTip(day, c, cell)"
-                                          class="flex-1 min-w-0 h-9 rounded-[3px] border flex flex-col items-center justify-center gap-px text-[9px] font-bold leading-[1.1] font-mono tracking-tighter select-none cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-court-green"
+                                          class="flex-1 min-w-0 h-11 rounded-[3px] border flex flex-col items-center justify-center gap-px text-[9px] font-bold leading-[1.1] font-mono tracking-tighter select-none cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-court-green"
                                           :class="[legendCls[cell.status], weekCellText[cell.status], weekTip && weekTip.key === cell.key ? 'ring-2 ring-offset-1 ring-slate-900' : '']"><span aria-hidden="true">{{ cell.from }}</span><span aria-hidden="true" class="block w-2 border-t border-current opacity-50"></span><span aria-hidden="true">{{ cell.to }}</span></span>
-                                </span>
+                                </span></span>
                                 <span class="w-6 flex-shrink-0 text-right text-[11px] font-bold" :class="c.free === 0 ? 'text-slate-500' : 'text-emerald-700'">{{ c.free }}</span>
                             </div>
                         </div>
@@ -1116,8 +1124,8 @@ window.ponikvaLoadTimer=setTimeout(function(){document.getElementById('launch-he
                     <div v-if="affectedClosureBookings.length" class="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950"><strong>Prizadete prihodnje rezervacije: {{ affectedClosureBookings.length }}</strong><p class="mt-1">Rezervacije ostanejo shranjene. Preverite jih in po potrebi prekličite.</p><ul class="mt-2 space-y-1 max-h-48 overflow-y-auto"><li v-for="b in affectedClosureBookings" :key="b.id">{{ b.date }} · {{ courtName(b.courtId) }} · {{ b.timeSlot }} · {{ b.userName }}</li></ul></div>
                     <button @click="addClosure" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold">Dodaj zaprtje</button>
                     <div v-if="closures.length === 0" class="text-xs text-slate-500">Ni zaprtij.</div>
-                    <div v-for="c in sortedClosures" :key="c.id" class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                        <span><strong>{{ c.courtId === 'all' ? 'Vsa igrišča' : courtName(c.courtId) }}</strong> · {{ c.date }}<span v-if="c.dateTo && c.dateTo !== c.date"> → {{ c.dateTo }}</span> · {{ pad(c.fromHour) }}:00–{{ pad(c.toHour) }}:00<span v-if="c.note" class="text-slate-500"> · {{ c.note }}</span></span>
+                    <div v-for="c in sortedClosures" :key="c.id" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                        <span class="min-w-0 break-words"><strong>{{ c.courtId === 'all' ? 'Vsa igrišča' : courtName(c.courtId) }}</strong> · {{ c.date }}<span v-if="c.dateTo && c.dateTo !== c.date"> → {{ c.dateTo }}</span> · {{ pad(c.fromHour) }}:00–{{ pad(c.toHour) }}:00<span v-if="c.note" class="text-slate-500"> · {{ c.note }}</span></span>
                         <button @click="removeClosure(c.id)" class="px-2.5 py-1 rounded-lg bg-red-100 text-red-700 border border-red-300 font-semibold"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 </div>
@@ -1140,8 +1148,8 @@ window.ponikvaLoadTimer=setTimeout(function(){document.getElementById('launch-he
                     </div>
                     <div class="text-[11px] text-slate-500">Prikazanih {{ adminBookings.length }} rezervacij.</div>
                     <div class="max-h-96 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl">
-                        <div v-for="b in adminBookings" :key="b.id" class="flex items-center justify-between gap-3 px-3 py-2 text-xs">
-                            <span><strong>{{ b.date }}</strong> · {{ b.timeSlot }} · {{ courtName(b.courtId) }} · {{ b.userName }}</span>
+                        <div v-for="b in adminBookings" :key="b.id" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 px-3 py-2 text-xs">
+                            <span class="min-w-0 break-words"><strong>{{ b.date }}</strong> · {{ b.timeSlot }} · {{ courtName(b.courtId) }} · {{ b.userName }}</span>
                             <button @click="promptCancelBooking(b)" class="px-2.5 py-1 rounded-lg bg-red-100 text-red-700 border border-red-300 font-semibold"><i class="fa-solid fa-trash-can"></i> Izbriši</button>
                         </div>
                         <div v-if="adminBookings.length === 0" class="p-4 text-slate-500 text-xs">Ni rezervacij za izbrane filtre.</div>
